@@ -26,8 +26,9 @@ public class Member {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "join_type")
-    private String joinType; // "EMAIL", "KAKAO"
+    @Enumerated(EnumType.STRING)
+    @Column(name = "join_type",nullable = false)
+    private MemberJoinType memberJoinType;
 
     @Column(name = "social_id")
     private String socialId;
