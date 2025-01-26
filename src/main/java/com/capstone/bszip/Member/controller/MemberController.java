@@ -7,17 +7,21 @@ import com.capstone.bszip.Member.service.dto.LoginRequest;
 import com.capstone.bszip.Member.service.dto.SignupAddRequest;
 import com.capstone.bszip.Member.service.dto.SignupRequest;
 import io.jsonwebtoken.JwtException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 @RestController
+@Tag(name = "Member", description = "회원 관리 API")
 public class MemberController {
     private final MemberService memberService;
 
@@ -28,6 +32,11 @@ public class MemberController {
 
     //회원 가입
     @PostMapping("/signup")
+    @Operation(summary = "회원 가입", description = "이메일과 비밀번호로 회원 가입을 진행합니다.")
+    @ApiResponse(responseCode = "200", description = "회원가입-이메일,비밀번호 성공",
+            content = @Content(schema = @Schema(implementation = Map.class)))
+    @ApiResponse(responseCode = "500", description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = Map.class)))
     public ResponseEntity<?> signup(@RequestBody SignupRequest signupRequest){
         //회원 정보 저장
         try {
@@ -43,8 +52,17 @@ public class MemberController {
     }
     //회원 가입-닉네임
     @PostMapping("/signup/add")
+    @Operation(summary = "회원 가입 추가 정보", description = "닉네임을 추가하여 회원 가입을 완료합니다.")
+    @ApiResponse(responseCode = "200", description = "회원가입 완료",
+            content = @Content(schema = @Schema(implementation = Map.class)))
+    @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰",
+            content = @Content(schema = @Schema(implementation = Map.class)))
+    @ApiResponse(responseCode = "500", description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = Map.class)))
     //이메일,비밀번호->닉네임으로 넘어갈때 헤더에 token 포함 ..
-    public ResponseEntity<?> add(@RequestHeader("Authorization") String token, @RequestBody SignupAddRequest signupAddRequest){
+    public ResponseEntity<?> add(
+            @Parameter(description = "이메일 생성 토큰", required = true) @RequestHeader("Authorization") String token,
+            @RequestBody SignupAddRequest signupAddRequest){
         try {
             // 토큰에서 이메일 추출
             String email = JwtUtil.extractEmail(token);
@@ -63,6 +81,11 @@ public class MemberController {
     }
     //로그인
     @PostMapping("/login")
+    @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인합니다.")
+    @ApiResponse(responseCode = "200", description = "로그인 성공",
+            content = @Content(schema = @Schema(implementation = JwtResponse.class)))
+    @ApiResponse(responseCode = "500", description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = Map.class)))
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest){
         try{
             String token = memberService.loginUser(loginRequest);
