@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -52,6 +53,7 @@ public class MemberController {
     }
     //회원 가입-닉네임
     @PostMapping("/signup/add")
+    @SecurityRequirement(name = "jwtAuth")
     @Operation(summary = "회원 가입 추가 정보", description = "닉네임을 추가하여 회원 가입을 완료합니다.")
     @ApiResponse(responseCode = "200", description = "회원가입 완료",
             content = @Content(schema = @Schema(implementation = Map.class)))
@@ -64,6 +66,7 @@ public class MemberController {
             @Parameter(description = "이메일 생성 토큰", required = true) @RequestHeader("Authorization") String token,
             @RequestBody SignupAddRequest signupAddRequest){
         try {
+            token = token.substring(7);
             // 토큰에서 이메일 추출
             String email = JwtUtil.extractEmail(token);
 
