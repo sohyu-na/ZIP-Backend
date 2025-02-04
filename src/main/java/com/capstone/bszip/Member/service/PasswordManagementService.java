@@ -1,7 +1,7 @@
 package com.capstone.bszip.Member.service;
 
-import com.capstone.bszip.Member.repository.MemberRepository;
 import com.capstone.bszip.Member.service.dto.EmailMessage;
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +12,6 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.security.SecureRandom;
-import java.util.Random;
 
 @Slf4j
 @Service
@@ -29,7 +28,7 @@ public class PasswordManagementService {
 
     // 임시 비밀번호 생성된 거 적용하고 이메일을 보냄
     public String sendMail(EmailMessage emailMessage, String type) {
-        memberService.showAllMembers();
+
         String authNum = createCode();
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -48,10 +47,8 @@ public class PasswordManagementService {
             log.info("Successfully sent email to " + emailMessage.getTo());
 
             return authNum;
-        } catch (Exception e){
-            log.info("Failed to send email to " + emailMessage.getTo());
-            throw new RuntimeException("Failed to send email to " + emailMessage.getTo(), e);
-
+        }catch (MessagingException e) {
+            throw new RuntimeException(e);
         }
     }
     // 임시 비밀번호 생성

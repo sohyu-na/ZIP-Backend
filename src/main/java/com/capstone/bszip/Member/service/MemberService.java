@@ -5,7 +5,6 @@ import com.capstone.bszip.Member.repository.MemberRepository;
 import com.capstone.bszip.Member.security.JwtUtil;
 import com.capstone.bszip.Member.service.dto.LoginRequest;
 import com.capstone.bszip.Member.service.dto.SignupRequest;
-import com.capstone.bszip.Member.service.dto.SignupAddRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class MemberService {
@@ -75,7 +73,7 @@ public class MemberService {
     @Transactional
     public void setTempPassword(String email, String password){
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(()-> new IllegalArgumentException("해당 이메밀의 회원을 찾을 수 없음 : "+ email));
+                .orElseThrow(()-> new RuntimeException("등록된 이메일을 찾을 수 없습니다."));
         member.setPassword(passwordEncoder.encode(password));
         memberRepository.save(member);
     }
