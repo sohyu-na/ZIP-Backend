@@ -30,7 +30,7 @@ public class SecurityConfig { //수정해야함
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/signup", "/login").permitAll()  // 회원가입과 로그인은 허용
+                        .requestMatchers("/signup", "/login", "/api/new-password/").permitAll()  // 회원가입과 로그인은 허용
                         .anyRequest().authenticated()  // 나머지 요청은 인증 필요
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt());  // JWT 인증 적용

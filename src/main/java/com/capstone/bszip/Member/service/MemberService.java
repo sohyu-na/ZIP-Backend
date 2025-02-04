@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class MemberService {
@@ -70,6 +71,18 @@ public class MemberService {
             throw new RuntimeException("일치하지 않는 비밀번호입니다.");
         }
         return JwtUtil.generateToken(member.getEmail());
+    }
+    @Transactional
+    public void setTempPassword(String email, String password){
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(()-> new IllegalArgumentException("해당 이메밀의 회원을 찾을 수 없음 : "+ email));
+        member.setPassword(passwordEncoder.encode(password));
+        memberRepository.save(member);
+    }
+
+
+    public void showAllMembers(){
+        memberRepository.findAll().forEach(System.out::println);
     }
 }
 
