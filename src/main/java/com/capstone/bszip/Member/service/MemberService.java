@@ -12,7 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
+import static com.capstone.bszip.Member.domain.MemberJoinType.DEFAULT;
 
 @Service
 public class MemberService {
@@ -47,7 +51,7 @@ public class MemberService {
         if (memberRepository.existsByNickname(nickname)){
             throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
         }
-        // 최종 회원가입 처리
+
         Member member = new Member();
         //사용자 정보 설정
         member.setEmail(email);
@@ -55,6 +59,11 @@ public class MemberService {
         member.setCreatedAt(LocalDateTime.now());
         member.setUpdatedAt(LocalDateTime.now());
         member.setNickname(nickname);
+        member.setMemberJoinType(DEFAULT);
+        //권한 추가
+        Set<String> roles = new HashSet<>();
+        roles.add("USER");
+        member.setRoles(roles);
 
         memberRepository.save(member);
 
