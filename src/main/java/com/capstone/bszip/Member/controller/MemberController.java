@@ -14,7 +14,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,14 +40,16 @@ public class MemberController {
             content = @Content(schema = @Schema(implementation = Map.class)))
     @ApiResponse(responseCode = "500", description = "서버 오류",
             content = @Content(schema = @Schema(implementation = Map.class)))
-    public ResponseEntity<?> signup(@RequestBody SignupRequest signupRequest){
-        //회원 정보 저장
+    public ResponseEntity<?> signup(
+            @Valid @RequestBody SignupRequest signupRequest){
         try {
             // 이메일 및 비밀번호 저장
             memberService.registerMember(signupRequest);
-            // 이메일을 포함한 JWT 토큰 발급
-            String token = JwtUtil.generateToken(signupRequest.getEmail());
-            return ResponseEntity.ok(Map.of("message", "회원가입-이메일,비밀번호 성공", "token", token));
+            // 이메일을 포함한 임시 JWT 토큰 발급
+            String token = JwtUtil.issueTempToken(signupRequest.getEmail());
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .body(Map.of("message", "TEMP_TOKEN_ISSUED"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", e.getMessage()));
@@ -61,12 +65,11 @@ public class MemberController {
             content = @Content(schema = @Schema(implementation = Map.class)))
     @ApiResponse(responseCode = "500", description = "서버 오류",
             content = @Content(schema = @Schema(implementation = Map.class)))
-    //이메일,비밀번호->닉네임으로 넘어갈때 헤더에 token 포함 ..
     public ResponseEntity<?> add(
-            @Parameter(description = "이메일 생성 토큰", required = true) @RequestHeader("Authorization") String token,
-            @RequestBody SignupAddRequest signupAddRequest){
+            @RequestHeader("Authorization") String token,
+            @Valid @RequestBody SignupAddRequest signupAddRequest){
+        System.out.println(token);
         try {
-            token = token.substring(7);
             // 토큰에서 이메일 추출
             String email = JwtUtil.extractEmail(token);
 

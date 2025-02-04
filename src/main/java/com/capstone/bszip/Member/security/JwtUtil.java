@@ -20,6 +20,7 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(keyBytes);
     }
 
+    private static final long TEMP_TOKEN_EXPIRATION = 1000 * 60 * 30; // 30분
     private static final long EXPIRATION_TIME = 1000 * 60 * 15; // 15분
 
     private static Key getSigningKey() {
@@ -29,6 +30,17 @@ public class JwtUtil {
         return key;
     }
 
+    // 이메일 임시 토큰 생성
+    public static String issueTempToken(String email) {
+        Date now = new Date();
+
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + TEMP_TOKEN_EXPIRATION))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
     // 토큰 생성
     public static String generateToken(String email) {
         return Jwts.builder()
@@ -42,8 +54,9 @@ public class JwtUtil {
     // 토큰에서 이메일 추출
     public static String extractEmail(String token) {
         try {
-            return Jwts.parser()
-                    .setSigningKey(SECRET_KEY) // secretKey가 JwtUtil에 정의되어 있어야 함
+            return Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
                     .parseClaimsJws(token.replace("Bearer ", ""))
                     .getBody()
                     .getSubject();
@@ -52,20 +65,13 @@ public class JwtUtil {
         }
     }
 
-    // 토큰 유효성 검증
-    public static boolean validateToken(String token) {
-        try {
-            if (token.startsWith("Bearer ")) {
-                token = token.substring(7);
-            }
-            Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
-                    .build()
-                    .parseClaimsJws(token);
-            return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
-        }
+    // JWT 토큰에서 클레임 추출하는 함수
+    public static Claims extractToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
 
