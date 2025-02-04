@@ -1,4 +1,4 @@
-package com.capstone.bszip.Member.security;
+package com.capstone.bszip.auth.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -21,7 +21,8 @@ public class JwtUtil {
     }
 
     private static final long TEMP_TOKEN_EXPIRATION = 1000 * 60 * 30; // 30분
-    private static final long EXPIRATION_TIME = 1000 * 60 * 15; // 15분
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 ; // 1시간
+    private static final long REFRESH_TOKEN_EXPIRE_TIME= 1000 * 60 * 60 * 24 *7; // 7일
 
     private static Key getSigningKey() {
         if(key==null){
@@ -41,16 +42,6 @@ public class JwtUtil {
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
-    // 토큰 생성
-    public static String generateToken(String email) {
-        return Jwts.builder()
-                .setSubject(email)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
-
     // 토큰에서 이메일 추출
     public static String extractEmail(String token) {
         try {
@@ -63,6 +54,30 @@ public class JwtUtil {
         } catch (Exception e) {
             throw new JwtException("유효하지 않은 토큰입니다.");
         }
+    }
+    // JWT access token 생성
+    public static String createAccessToken(String email){
+        long now = (new Date()).getTime();
+        Date accessTokenExpiredAt = new Date(now+ACCESS_TOKEN_EXPIRE_TIME);
+
+        return Jwts.builder()
+                .claim("member_email",email)
+                .setSubject(email)
+                .setExpiration(accessTokenExpiredAt)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+    // JWT refresh token 생성
+    public static String createRefreshToken(String email){
+        long now = (new Date()).getTime();
+        Date refreshTokenExpiredAt = new Date(now+REFRESH_TOKEN_EXPIRE_TIME);
+
+        return Jwts.builder()
+                .claim("member_email",email)
+                .setSubject(email)
+                .setExpiration(refreshTokenExpiredAt)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
     }
 
     // JWT 토큰에서 클레임 추출하는 함수

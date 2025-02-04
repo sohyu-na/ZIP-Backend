@@ -1,4 +1,4 @@
-package com.capstone.bszip.Member.security;
+package com.capstone.bszip.auth.security;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {

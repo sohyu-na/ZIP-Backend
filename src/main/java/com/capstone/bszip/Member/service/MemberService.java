@@ -2,33 +2,31 @@ package com.capstone.bszip.Member.service;
 
 import com.capstone.bszip.Member.domain.Member;
 import com.capstone.bszip.Member.repository.MemberRepository;
-import com.capstone.bszip.Member.security.JwtUtil;
+import com.capstone.bszip.Member.service.dto.TokenResponse;
+import com.capstone.bszip.auth.refreshToken.RefreshToken;
+import com.capstone.bszip.auth.refreshToken.RefreshTokenRepository;
+import com.capstone.bszip.auth.security.JwtUtil;
 import com.capstone.bszip.Member.service.dto.LoginRequest;
 import com.capstone.bszip.Member.service.dto.SignupRequest;
-import com.capstone.bszip.Member.service.dto.SignupAddRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.capstone.bszip.Member.domain.MemberJoinType.DEFAULT;
 
+@RequiredArgsConstructor
 @Service
 public class MemberService {
     private final MemberRepository memberRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
 
     private final Map<String, String> temporaryStorage = new HashMap<>(); // 임시 데이터 저장소
-
-    public MemberService(MemberRepository memberRepository, PasswordEncoder passwordEncoder) {
-        this.memberRepository = memberRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @Transactional
     public void registerMember(SignupRequest signupRequest){
@@ -70,15 +68,34 @@ public class MemberService {
         // 임시 저장소에서 데이터 삭제
         temporaryStorage.remove(email);
     }
+    public void updateRefreshToken(String email,String refreshToken){
+        Optional<Member> memberOptional = memberRepository.findByEmail(email);
+        if(memberOptional.isPresent()){
+            Member member = memberOptional.get();
+            RefreshToken token = new RefreshToken();
+            token.setMemberId(member.getMemberId());
+            token.setRefreshToken(refreshToken);
+            token.setExpiryDate(Instant.now().plusSeconds(7 * 24 * 60 * 60));
 
+            refreshTokenRepository.save(token);
+        }
+    }
     @Transactional
-    public String loginUser(LoginRequest loginRequest){
+    public TokenResponse loginUser(LoginRequest loginRequest){
         Member member = memberRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 이메일입니다."));
-        if(!passwordEncoder.matches(loginRequest.getPassword(), member.getPassword())) {
+        if(passwordEncoder.matches(loginRequest.getPassword(), member.getPassword())) {
+            String email = member.getEmail();
+            //토큰 생성
+            String accessToken = JwtUtil.createAccessToken(email);
+            String refreshToken = JwtUtil.createRefreshToken(email);
+            //refresh 토큰 db 저장
+            updateRefreshToken(email,refreshToken);
+            return new TokenResponse(accessToken, refreshToken);
+        }
+        else {
             throw new RuntimeException("일치하지 않는 비밀번호입니다.");
         }
-        return JwtUtil.generateToken(member.getEmail());
     }
 }
 
