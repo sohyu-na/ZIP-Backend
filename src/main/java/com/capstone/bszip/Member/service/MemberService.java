@@ -97,5 +97,17 @@ public class MemberService {
             throw new RuntimeException("일치하지 않는 비밀번호입니다.");
         }
     }
+    @Transactional
+    public void setTempPassword(String email, String password){
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(()-> new RuntimeException("등록된 이메일을 찾을 수 없습니다."));
+        member.setPassword(passwordEncoder.encode(password));
+        memberRepository.save(member);
+    }
+
+
+    public void showAllMembers(){
+        memberRepository.findAll().forEach(System.out::println);
+    }
 }
 
