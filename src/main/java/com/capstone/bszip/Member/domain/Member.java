@@ -2,22 +2,26 @@ package com.capstone.bszip.Member.domain;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.Fetch;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Data
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "users") // 테이블 이름 매핑
+@Table(name = "members") // 테이블 이름 매핑
 public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private Long userId;
+    @Column(name = "member_id")
+    private Long memberId;
 
-    @Column(name = "user_email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @Column(name = "nickname", nullable = false)
@@ -40,4 +44,10 @@ public class Member {
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    //권한 설정
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name="member_roles",joinColumns = @JoinColumn(name = "member_id"))
+    @Column(name="role")
+    private Set<String> roles;
 }

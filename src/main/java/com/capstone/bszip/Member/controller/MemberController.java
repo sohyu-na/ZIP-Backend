@@ -1,35 +1,37 @@
 package com.capstone.bszip.Member.controller;
 
-import com.capstone.bszip.Member.security.JwtUtil;
+import com.capstone.bszip.Member.service.dto.TokenResponse;
+import com.capstone.bszip.auth.security.JwtUtil;
 import com.capstone.bszip.Member.service.MemberService;
-import com.capstone.bszip.Member.service.dto.JwtResponse;
 import com.capstone.bszip.Member.service.dto.LoginRequest;
 import com.capstone.bszip.Member.service.dto.SignupAddRequest;
 import com.capstone.bszip.Member.service.dto.SignupRequest;
 import io.jsonwebtoken.JwtException;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 @RestController
+@RequiredArgsConstructor
 @Tag(name = "Member", description = "회원 관리 API")
 public class MemberController {
     private final MemberService memberService;
-
-    @Autowired
-    public MemberController(MemberService memberService) {
-        this.memberService = memberService;
-    }
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     //회원 가입
     @PostMapping("/signup")
@@ -38,14 +40,16 @@ public class MemberController {
             content = @Content(schema = @Schema(implementation = Map.class)))
     @ApiResponse(responseCode = "500", description = "서버 오류",
             content = @Content(schema = @Schema(implementation = Map.class)))
-    public ResponseEntity<?> signup(@RequestBody SignupRequest signupRequest){
-        //회원 정보 저장
+    public ResponseEntity<?> signup(
+            @Valid @RequestBody SignupRequest signupRequest){
         try {
             // 이메일 및 비밀번호 저장
             memberService.registerMember(signupRequest);
-            // 이메일을 포함한 JWT 토큰 발급
-            String token = JwtUtil.generateToken(signupRequest.getEmail());
-            return ResponseEntity.ok(Map.of("message", "회원가입-이메일,비밀번호 성공", "token", token));
+            // 이메일을 포함한 임시 JWT 토큰 발급
+            String token = JwtUtil.issueTempToken(signupRequest.getEmail());
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .body(Map.of("message", "TEMP_TOKEN_ISSUED"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", e.getMessage()));
@@ -61,12 +65,11 @@ public class MemberController {
             content = @Content(schema = @Schema(implementation = Map.class)))
     @ApiResponse(responseCode = "500", description = "서버 오류",
             content = @Content(schema = @Schema(implementation = Map.class)))
-    //이메일,비밀번호->닉네임으로 넘어갈때 헤더에 token 포함 ..
     public ResponseEntity<?> add(
-            @Parameter(description = "이메일 생성 토큰", required = true) @RequestHeader("Authorization") String token,
-            @RequestBody SignupAddRequest signupAddRequest){
+            @RequestHeader("Authorization") String token,
+            @Valid @RequestBody SignupAddRequest signupAddRequest){
+        System.out.println(token);
         try {
-            token = token.substring(7);
             // 토큰에서 이메일 추출
             String email = JwtUtil.extractEmail(token);
 
@@ -83,17 +86,25 @@ public class MemberController {
         }
     }
     //로그인
-    @PostMapping("/login")
+    @PostMapping("/signin")
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인합니다.")
     @ApiResponse(responseCode = "200", description = "로그인 성공",
-            content = @Content(schema = @Schema(implementation = JwtResponse.class)))
-    @ApiResponse(responseCode = "500", description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = TokenResponse.class)))
+    @ApiResponse(responseCode = "401", description = "인증 실패 - 잘못된 자격 증명",
             content = @Content(schema = @Schema(implementation = Map.class)))
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest){
+    @ApiResponse(responseCode = "500", description = "서버 내부 오류",
+            content = @Content(schema = @Schema(implementation = Map.class)))
+
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response){
         try{
-            String token = memberService.loginUser(loginRequest);
-            return ResponseEntity.ok(new JwtResponse(token, "Bearer"));
-        } catch(Exception e){
+             TokenResponse tokens = memberService.loginUser(loginRequest);
+             response.addHeader("Authorization","Bearer "+tokens.getAccessToken());
+
+            return ResponseEntity.ok(tokens);
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "잘못된 접근"));
+        }catch(Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", e.getMessage()));
         }
