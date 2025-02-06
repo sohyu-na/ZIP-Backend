@@ -1,6 +1,7 @@
 package com.capstone.bszip.Member.service;
 
 import com.capstone.bszip.Member.domain.Member;
+import com.capstone.bszip.Member.domain.MemberJoinType;
 import com.capstone.bszip.Member.repository.MemberRepository;
 import com.capstone.bszip.Member.service.dto.TokenResponse;
 import com.capstone.bszip.auth.refreshToken.RefreshToken;
@@ -34,7 +35,14 @@ public class MemberService {
         if (memberRepository.existsByEmail(signupRequest.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
-        temporaryStorage.put(signupRequest.getEmail(), passwordEncoder.encode(signupRequest.getPassword())); // 이메일-비밀번호 임시 저장
+
+        if(signupRequest.getPassword().equals("kakao-password")){
+            temporaryStorage.put(signupRequest.getEmail(), signupRequest.getPassword());
+        }
+        else{
+            temporaryStorage.put(signupRequest.getEmail(), passwordEncoder.encode(signupRequest.getPassword()));
+        }
+         // 이메일-비밀번호 임시 저장
     }
     @Transactional
     public void registerMemberNickname(String email,String nickname){
@@ -57,7 +65,11 @@ public class MemberService {
         member.setCreatedAt(LocalDateTime.now());
         member.setUpdatedAt(LocalDateTime.now());
         member.setNickname(nickname);
-        member.setMemberJoinType(DEFAULT);
+        if(password.equals("kakao-password")){
+            member.setMemberJoinType(MemberJoinType.KAKAO);
+        } else {
+            member.setMemberJoinType(DEFAULT);
+        }
         //권한 추가
         Set<String> roles = new HashSet<>();
         roles.add("USER");
@@ -84,6 +96,9 @@ public class MemberService {
     public TokenResponse loginUser(LoginRequest loginRequest){
         Member member = memberRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 이메일입니다."));
+        if(member.getMemberJoinType() != DEFAULT){
+            throw new RuntimeException("카카오로 로그인해주세요");
+        }
         if(passwordEncoder.matches(loginRequest.getPassword(), member.getPassword())) {
             String email = member.getEmail();
             //토큰 생성
