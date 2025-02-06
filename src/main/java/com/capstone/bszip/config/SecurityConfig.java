@@ -34,10 +34,14 @@ public class SecurityConfig { //수정해야함
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:8080"); // 로컬 주소
-        configuration.addAllowedOrigin("https://15.164.93.210"); // 서버 주소
+        configuration.addAllowedOriginPattern("http://localhost:8080"); // 로컬 주소
+        configuration.addAllowedOriginPattern("https://15.164.93.210"); // 서버 주소
         configuration.addAllowedHeader("*");
-        configuration.addAllowedMethod("*");
+        configuration.addAllowedMethod("GET");
+        configuration.addAllowedMethod("POST");
+        configuration.addAllowedMethod("PUT");
+        configuration.addAllowedMethod("DELETE");
+        configuration.addAllowedMethod("OPTIONS");
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration); // 모든 경로
