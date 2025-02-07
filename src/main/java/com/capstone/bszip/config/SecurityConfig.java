@@ -34,8 +34,9 @@ public class SecurityConfig { //수정해야함
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOriginPattern("*");
         configuration.addAllowedOriginPattern("http://localhost:8080"); // 로컬 주소
-        configuration.addAllowedOriginPattern("https://15.164.93.210"); // 서버 주소
+        configuration.addAllowedOriginPattern("https://15.164.93.21:8080"); // 서버 주소
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("GET");
         configuration.addAllowedMethod("POST");

@@ -35,9 +35,7 @@ public class SwaggerConfig {
 
 
         return new OpenAPI()
-                .addServersItem(new Server().url("http:localhost:8080").description("Local 환경"))
-                .addServersItem(new Server().url("http:locahlhost:5173").description("Production 서버"))
-                .addServersItem(new Server().url("http:15.164.93.210:8080").description("EC2 테스트 서버"))
+                .addServersItem(new Server().url("/").description("Local 환경"))
                 .components(new Components())
                 .info(new Info().title("API Documentation").version("v1"))
                 .addSecurityItem(new SecurityRequirement());
