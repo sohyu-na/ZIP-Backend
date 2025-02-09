@@ -54,9 +54,9 @@ public class PasswordManagementService {
     // 임시 비밀번호 생성
     public String createCode() {
         SecureRandom random = new SecureRandom();
-        StringBuilder password = new StringBuilder(16);
+        StringBuilder password = new StringBuilder(17);
 
-        for(int i = 0; i < 16; i++) {
+        for(int i = 0; i < 17; i++) {
             int index = random.nextInt(CHARACTERS.length());
             password.append(CHARACTERS.charAt(index));
         }
