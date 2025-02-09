@@ -36,9 +36,9 @@ public class SwaggerConfig {
 
         return new OpenAPI()
                 .addServersItem(new Server().url("/").description("Local 환경"))
-                .components(new Components())
-                .info(new Info().title("API Documentation").version("v1"))
-                .addSecurityItem(new SecurityRequirement());
+                .components(components)
+                .info(info)
+                .addSecurityItem(securityRequirement);
     }
 
 }
