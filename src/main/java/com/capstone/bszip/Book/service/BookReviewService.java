@@ -80,7 +80,7 @@ public class BookReviewService {
             // 쿼리 파라미터 설정
             UriComponents uri = UriComponentsBuilder.fromHttpUrl(kakaoUri)
                     .queryParam("query", author)
-                    .queryParam("target", "title")
+                    .queryParam("target", "person")
                     .build();
 
             // kakao api 책 검색
