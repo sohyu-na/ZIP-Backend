@@ -25,7 +25,7 @@ public class BookReviewController {
 
     private final BookReviewService bookReviewService;
     /*
-    * 도서 검색 api
+    * 제목으로 도서 검색 api
     * - 책 ID, 이미지 url, 책 제목, 작가,출판사 제공*/
     @GetMapping("/book-search")
     @Operation(summary = "책 검색", description = "책 제목을 입력하여 책제목, 작가, 출판사, isbn, 책 표지 url을 검색하여 볼러옵니다.")
@@ -58,9 +58,30 @@ public class BookReviewController {
                         "]" +
                         "}"
         )})),})
-    public ResponseEntity<?> searchBookByTitle(@RequestParam String query) {
+    public ResponseEntity<?> searchBookByTitle(@RequestParam String titleQuery) {
         try{
-            String bookJson = bookReviewService.searchBooksByTitle(query);
+            String bookJson = bookReviewService.searchBooksByTitle(titleQuery);
+            List<BookSearchResponse> bookSearchResponses = bookReviewService.convertToBookSearchResponse(bookJson);
+            return ResponseEntity.ok(
+                    SuccessResponse.builder()
+                            .result(true)
+                            .status(HttpServletResponse.SC_OK)
+                            .data(bookSearchResponses)
+                            .message("검색 성공")
+                            .build()
+            );
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    /*
+     * 작가로 도서 검색 api
+     * - 책 ID, 이미지 url, 책 제목, 작가,출판사 제공*/
+    @GetMapping("/book-search")
+    public ResponseEntity<?> searchBookByAuthor(@RequestParam String authorQuery) {
+        try{
+            String bookJson = bookReviewService.searchBooksByAuthor(authorQuery);
             List<BookSearchResponse> bookSearchResponses = bookReviewService.convertToBookSearchResponse(bookJson);
             return ResponseEntity.ok(
                     SuccessResponse.builder()

@@ -31,7 +31,7 @@ public class BookReviewService {
         this.objectMapper = objectMapper;
     }
 
-    // kakao book api로 검색된 책 정보 json 가져오기
+    // kakao book api에서 책 제목로 검색된 책 정보 json 가져오기
     public String searchBooksByTitle(String title) throws Exception {
         try{
             String kakaoUri = "https://dapi.kakao.com/v3/search/book";
@@ -68,7 +68,46 @@ public class BookReviewService {
             throw new Exception("API 요청 실패: " + e.getMessage(), e);
         }
     }
-    // 역직렬화 - gson으로 간단하게 구현했으나 성능 향상을 위해 추후에 Jackson으로 바꾸기
+
+    public String searchBooksByAuthor(String author) throws Exception {
+        try{
+            String kakaoUri = "https://dapi.kakao.com/v3/search/book";
+            // http 헤더 설정
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "KakaoAK " + kakaoApiKey);
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+
+            // 쿼리 파라미터 설정
+            UriComponents uri = UriComponentsBuilder.fromHttpUrl(kakaoUri)
+                    .queryParam("query", author)
+                    .queryParam("target", "title")
+                    .build();
+
+            // kakao api 책 검색
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<String> response = restTemplate.exchange(
+                    uri.toString(),
+                    HttpMethod.GET,
+                    entity,
+                    String.class);
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            // 4xx 클라이언트 오류
+            throw new Exception("클라이언트 오류: " + e.getStatusCode() + " - " + e.getMessage(), e);
+        } catch (HttpServerErrorException e) {
+            // 5xx 서버 오류
+            throw new Exception("서버 오류: " + e.getStatusCode() + " - " + e.getMessage(), e);
+        } catch (ResourceAccessException e) {
+            // 네트워크 오류 (타임아웃, 연결 불가 등)
+            throw new Exception("네트워크 오류: " + e.getMessage(), e);
+        } catch (RestClientException e) {
+            // 기타 RestTemplate 관련 예외
+            throw new Exception("API 요청 실패: " + e.getMessage(), e);
+        }
+    }
+
+
+    // 역직렬화 - Jackson
     public List<BookSearchResponse> convertToBookSearchResponse(String bookJson){
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -97,6 +136,5 @@ public class BookReviewService {
             throw new RuntimeException("JSON 변환 오류: " + e.getMessage(), e);
         }
     }
-
 
 }
