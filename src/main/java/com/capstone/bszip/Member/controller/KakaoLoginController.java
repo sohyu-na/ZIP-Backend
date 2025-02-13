@@ -45,7 +45,6 @@ public class KakaoLoginController {
        if(loginWay == 3){
            try{
                TokenResponse tokens = kakaoService.loginUser(kakaoEmail);
-               response.addHeader("Authorization","Bearer "+tokens.getAccessToken());
 
                return ResponseEntity.ok(tokens);
            }catch (BadCredentialsException e) {
