@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -78,7 +79,7 @@ public class BookReviewController {
     /*
      * 작가로 도서 검색 api
      * - 책 ID, 이미지 url, 책 제목, 작가,출판사 제공*/
-    @GetMapping("/book-search")
+    @GetMapping("/book-search-by-author")
     public ResponseEntity<?> searchBookByAuthor(@RequestParam String authorQuery) {
         try{
             String bookJson = bookReviewService.searchBooksByAuthor(authorQuery);
@@ -95,7 +96,6 @@ public class BookReviewController {
             throw new RuntimeException(e);
         }
     }
-
     /*
     * 리뷰 작성 api
     * - 책 ID, 별점, 리뷰 받아서 저장*/
