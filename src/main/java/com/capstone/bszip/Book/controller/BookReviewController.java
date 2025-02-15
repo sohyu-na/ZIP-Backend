@@ -1,5 +1,6 @@
 package com.capstone.bszip.Book.controller;
 
+import com.capstone.bszip.Book.dto.AddIsEndBookResponse;
 import com.capstone.bszip.Book.dto.BookSearchResponse;
 import com.capstone.bszip.Book.service.BookReviewService;
 import com.capstone.bszip.commonDto.SuccessResponse;
@@ -59,15 +60,15 @@ public class BookReviewController {
                         "]" +
                         "}"
         )})),})
-    public ResponseEntity<?> searchBookByTitle(@RequestParam String titleQuery) {
+    public ResponseEntity<?> searchBookByTitle(@RequestParam String query) {
         try{
-            String bookJson = bookReviewService.searchBooksByTitle(titleQuery);
-            List<BookSearchResponse> bookSearchResponses = bookReviewService.convertToBookSearchResponse(bookJson);
+            String bookJson = bookReviewService.searchBooksByTitle(query);
+            AddIsEndBookResponse addIsEndBookResponse = bookReviewService.convertToBookSearchResponse(bookJson);
             return ResponseEntity.ok(
                     SuccessResponse.builder()
                             .result(true)
                             .status(HttpServletResponse.SC_OK)
-                            .data(bookSearchResponses)
+                            .data(addIsEndBookResponse) // 현재 페이지가 끝인지 확인할 수 있는 것도 추가해야 될듯..!
                             .message("검색 성공")
                             .build()
             );
@@ -80,15 +81,15 @@ public class BookReviewController {
      * 작가로 도서 검색 api
      * - 책 ID, 이미지 url, 책 제목, 작가,출판사 제공*/
     @GetMapping("/book-search-by-author")
-    public ResponseEntity<?> searchBookByAuthor(@RequestParam String authorQuery) {
+    public ResponseEntity<?> searchBookByAuthor(@RequestParam String query) {
         try{
-            String bookJson = bookReviewService.searchBooksByAuthor(authorQuery);
-            List<BookSearchResponse> bookSearchResponses = bookReviewService.convertToBookSearchResponse(bookJson);
+            String bookJson = bookReviewService.searchBooksByAuthor(query);
+            AddIsEndBookResponse addIsEndBookResponse = bookReviewService.convertToBookSearchResponse(bookJson);
             return ResponseEntity.ok(
                     SuccessResponse.builder()
                             .result(true)
                             .status(HttpServletResponse.SC_OK)
-                            .data(bookSearchResponses)
+                            .data(addIsEndBookResponse)
                             .message("검색 성공")
                             .build()
             );
@@ -96,6 +97,12 @@ public class BookReviewController {
             throw new RuntimeException(e);
         }
     }
+    /*
+    * 더 많은 책 불러오기 api
+    *
+    * */
+
+
     /*
     * 리뷰 작성 api
     * - 책 ID, 별점, 리뷰 받아서 저장*/

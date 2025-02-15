@@ -1,9 +1,11 @@
 package com.capstone.bszip.Book.service;
 
+import com.capstone.bszip.Book.dto.AddIsEndBookResponse;
 import com.capstone.bszip.Book.dto.BookSearchResponse;
 import com.capstone.bszip.Book.repository.BookRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -18,11 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+@Slf4j
 @Service
 public class BookReviewService {
     private final BookRepository bookRepository;
     private final ObjectMapper objectMapper;
-
     @Value("${kakao.client.id}")
     private String kakaoApiKey;
 
@@ -31,7 +33,7 @@ public class BookReviewService {
         this.objectMapper = objectMapper;
     }
 
-    // kakao book api에서 책 제목로 검색된 책 정보 json 가져오기
+    // kakao book api에서 책 제목로 검색된 책 정보 json 가져오기 -> 책제목 검색이랑 작가 검색이랑 너무 공통되는 부분이 많아서 걍 통일시켜야 될 거 같으다...
     public String searchBooksByTitle(String title) throws Exception {
         try{
             String kakaoUri = "https://dapi.kakao.com/v3/search/book";
@@ -106,18 +108,26 @@ public class BookReviewService {
         }
     }
 
+    /*
+    * 지금 문제 query만 생각해서 제목이나 작가로 검색할 때 query가 같아도 증가됨...
+    * 그리고 지금은 유저가 한명이지만,, 여러명의 유저가 같은 걸 검색하면 어카냐...
+    * 그냥 url을 [더보기]랑 / [처음 검색]이랑 분리하는 게 나을 듯....
+    * */
 
     // 역직렬화 - Jackson
-    public List<BookSearchResponse> convertToBookSearchResponse(String bookJson){
+    public AddIsEndBookResponse convertToBookSearchResponse(String bookJson){
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode rootNode = objectMapper.readTree(bookJson);
+            // 페이지가 끝인지 아닌지 확인하기 위해서...
+            JsonNode meta = rootNode.get("meta");
+            boolean is_end = meta.get("is_end").asBoolean(); // is_end가 true면 더 이상받을 검색 결과가 없닷
             JsonNode documents = rootNode.path("documents");
 
             List<BookSearchResponse> bookSearchResponses = new ArrayList<>();
-
+            String title = "";
             for (JsonNode document : documents) {
-                String title = document.path("title").asText();
+                title = document.path("title").asText();
                 List<String> authorsList = new ArrayList<>();
 
                 for (JsonNode authorNode : document.path("authors")) {
@@ -131,7 +141,10 @@ public class BookReviewService {
 
                 bookSearchResponses.add(new BookSearchResponse(title, authorsList, publisher, isbn, thumbnail));
             }
-            return bookSearchResponses;
+            AddIsEndBookResponse addIsEndBookResponse = new AddIsEndBookResponse();
+            addIsEndBookResponse.setBookData(bookSearchResponses);
+            addIsEndBookResponse.setIsEnd(is_end);
+            return addIsEndBookResponse;
         } catch (Exception e) {
             throw new RuntimeException("JSON 변환 오류: " + e.getMessage(), e);
         }
