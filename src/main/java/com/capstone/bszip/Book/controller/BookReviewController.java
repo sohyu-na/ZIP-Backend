@@ -60,9 +60,9 @@ public class BookReviewController {
                         "]" +
                         "}"
         )})),})
-    public ResponseEntity<?> searchBookByTitle(@RequestParam String query) {
+    public ResponseEntity<?> searchBookByTitle(@RequestParam String query, @RequestParam(required = false, defaultValue = "1")int page) {
         try{
-            String bookJson = bookReviewService.searchBooksByTitle(query);
+            String bookJson = bookReviewService.searchBooksByTitle(query, page);
             AddIsEndBookResponse addIsEndBookResponse = bookReviewService.convertToBookSearchResponse(bookJson);
             return ResponseEntity.ok(
                     SuccessResponse.builder()
@@ -81,9 +81,9 @@ public class BookReviewController {
      * 작가로 도서 검색 api
      * - 책 ID, 이미지 url, 책 제목, 작가,출판사 제공*/
     @GetMapping("/book-search-by-author")
-    public ResponseEntity<?> searchBookByAuthor(@RequestParam String query) {
+    public ResponseEntity<?> searchBookByAuthor(@RequestParam String query, @RequestParam(required = false, defaultValue = "1")int page) {
         try{
-            String bookJson = bookReviewService.searchBooksByAuthor(query);
+            String bookJson = bookReviewService.searchBooksByAuthor(query, page);
             AddIsEndBookResponse addIsEndBookResponse = bookReviewService.convertToBookSearchResponse(bookJson);
             return ResponseEntity.ok(
                     SuccessResponse.builder()

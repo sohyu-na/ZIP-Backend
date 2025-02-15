@@ -34,7 +34,7 @@ public class BookReviewService {
     }
 
     // kakao book api에서 책 제목로 검색된 책 정보 json 가져오기 -> 책제목 검색이랑 작가 검색이랑 너무 공통되는 부분이 많아서 걍 통일시켜야 될 거 같으다...
-    public String searchBooksByTitle(String title) throws Exception {
+    public String searchBooksByTitle(String title, int page) throws Exception {
         try{
             String kakaoUri = "https://dapi.kakao.com/v3/search/book";
             // http 헤더 설정
@@ -46,6 +46,7 @@ public class BookReviewService {
             UriComponents uri = UriComponentsBuilder.fromHttpUrl(kakaoUri)
                     .queryParam("query", title)
                     .queryParam("target", "title")
+                    .queryParam("page", page)
                     .build();
 
             // kakao api 책 검색
@@ -71,7 +72,7 @@ public class BookReviewService {
         }
     }
 
-    public String searchBooksByAuthor(String author) throws Exception {
+    public String searchBooksByAuthor(String author, int page) throws Exception {
         try{
             String kakaoUri = "https://dapi.kakao.com/v3/search/book";
             // http 헤더 설정
@@ -83,6 +84,7 @@ public class BookReviewService {
             UriComponents uri = UriComponentsBuilder.fromHttpUrl(kakaoUri)
                     .queryParam("query", author)
                     .queryParam("target", "person")
+                    .queryParam("page", page)
                     .build();
 
             // kakao api 책 검색
