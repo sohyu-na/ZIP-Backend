@@ -98,7 +98,6 @@ public class MemberController {
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response){
         try{
              TokenResponse tokens = memberService.loginUser(loginRequest);
-             response.addHeader("Authorization","Bearer "+tokens.getAccessToken());
 
             return ResponseEntity.ok(tokens);
         } catch (BadCredentialsException e) {

@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+
 @Service
 @RequiredArgsConstructor
 public class BookstoreService {
@@ -16,5 +17,4 @@ public class BookstoreService {
     public List<Bookstore> searchBookstores(String keyword) {
         return bookstoreRepository.findByNameContainingIgnoreCaseOrAddressContainingIgnoreCase(keyword,keyword);
     }
-
 }
