@@ -2,8 +2,6 @@ package com.capstone.bszip.Bookstore.service;
 
 import com.capstone.bszip.Bookstore.domain.Bookstore;
 import com.capstone.bszip.Bookstore.repository.BookstoreRepository;
-import jakarta.annotation.PostConstruct;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -31,7 +29,7 @@ public class OpenApiService {
     @Value("${bookstore.child.key}")
     private String BOOKSTORE_CHILD_KEY;
 
-    @PostConstruct
+    //@PostConstruct
     public void saveCafeData() {
         String urlCafe = UriComponentsBuilder.fromHttpUrl(API_URL_CAFE)
                 .queryParam("serviceKey", BOOKSTORE_CAFE_KEY)
@@ -58,7 +56,7 @@ public class OpenApiService {
         }
     }
 
-    @PostConstruct
+    //@PostConstruct
     public void saveIndepData() {
         String urlIndep = UriComponentsBuilder.fromHttpUrl(API_URL_INDEP)
                 .queryParam("serviceKey", BOOKSTORE_INDEP_KEY)
@@ -84,7 +82,7 @@ public class OpenApiService {
             bookstoreRepository.save(bookstore);
         }
     }
-    @PostConstruct
+    //@PostConstruct
     public void saveChildData() {
         String urlChild = UriComponentsBuilder.fromHttpUrl(API_URL_CHILD)
                 .queryParam("serviceKey", BOOKSTORE_CHILD_KEY)
