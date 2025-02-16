@@ -47,6 +47,7 @@ public class BookReviewService {
                     .queryParam("query", title)
                     .queryParam("target", "title")
                     .queryParam("page", page)
+                    .queryParam("size", 12)
                     .build();
 
             // kakao api 책 검색
@@ -85,6 +86,7 @@ public class BookReviewService {
                     .queryParam("query", author)
                     .queryParam("target", "person")
                     .queryParam("page", page)
+                    .queryParam("size", 12)
                     .build();
 
             // kakao api 책 검색
@@ -151,5 +153,7 @@ public class BookReviewService {
             throw new RuntimeException("JSON 변환 오류: " + e.getMessage(), e);
         }
     }
+
+
 
 }
