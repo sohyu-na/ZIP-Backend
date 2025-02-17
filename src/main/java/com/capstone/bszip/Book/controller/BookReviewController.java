@@ -86,6 +86,7 @@ public class BookReviewController {
     /*
      * 작가로 도서 검색 api
      * - 책 ID, 이미지 url, 책 제목, 작가,출판사 제공*/
+    @Operation(summary = "작가로 책 검색", description = "작가를 입력하여 책제목, 작가, 출판사, isbn, 책 표지 url를 볼러옵니다.")
     @GetMapping("/book-search-by-author")
     public ResponseEntity<?> searchBookByAuthor(@RequestParam String query, @RequestParam(required = false, defaultValue = "1")int page) {
         try{
@@ -107,6 +108,7 @@ public class BookReviewController {
     /*
     * 리뷰 작성 api
     * - 책 ID, 별점, 리뷰 받아서 저장*/
+    @Operation(summary = "책 한 줄 리뷰 등록", description = "isbn, 리뷰 텍스트, 별점을 보내면 책을 저장하고 리뷰를 저장합니다. 예시 응답은 제목과 동일합니다.")
     @PostMapping("/new-review")
     public ResponseEntity<?> writeBookReview(Authentication authentication, @RequestBody BookReviewRequest bookReviewRequest) {
         try{
