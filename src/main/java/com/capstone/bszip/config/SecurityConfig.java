@@ -72,7 +72,7 @@ public class SecurityConfig { //수정해야함
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(SWAGGER_WHITELIST).permitAll() // Swagger UI 접근 허용
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/user/**").hasRole("ADMIN")
+                        .requestMatchers("/api/user/**").hasRole("USER")
                         .requestMatchers("/user/**").hasRole("USER")
                         .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated())

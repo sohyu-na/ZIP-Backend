@@ -1,19 +1,24 @@
 package com.capstone.bszip.Member.domain;
 
+import com.capstone.bszip.Book.domain.BookReview;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import org.hibernate.annotations.Fetch;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
 @Data
 @EntityListeners(AuditingEntityListener.class)
+@ToString(exclude = {"bookReviews"})
 @Table(name = "members") // 테이블 이름 매핑
 public class Member {
     @Id
@@ -50,4 +55,7 @@ public class Member {
     @CollectionTable(name="member_roles",joinColumns = @JoinColumn(name = "member_id"))
     @Column(name="role")
     private Set<String> roles;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookReview> bookReviews = new ArrayList<>();
 }
