@@ -1,8 +1,12 @@
 package com.capstone.bszip.Book.controller;
 
+import com.capstone.bszip.Book.domain.Book;
+import com.capstone.bszip.Book.domain.BookReview;
 import com.capstone.bszip.Book.dto.AddIsEndBookResponse;
+import com.capstone.bszip.Book.dto.BookReviewRequest;
 import com.capstone.bszip.Book.dto.BookSearchResponse;
 import com.capstone.bszip.Book.service.BookReviewService;
+import com.capstone.bszip.Member.domain.Member;
 import com.capstone.bszip.commonDto.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,12 +17,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/booksnap")
 @RequiredArgsConstructor
@@ -80,6 +86,7 @@ public class BookReviewController {
     /*
      * 작가로 도서 검색 api
      * - 책 ID, 이미지 url, 책 제목, 작가,출판사 제공*/
+    @Operation(summary = "작가로 책 검색", description = "작가를 입력하여 책제목, 작가, 출판사, isbn, 책 표지 url를 볼러옵니다.")
     @GetMapping("/book-search-by-author")
     public ResponseEntity<?> searchBookByAuthor(@RequestParam String query, @RequestParam(required = false, defaultValue = "1")int page) {
         try{
@@ -97,15 +104,39 @@ public class BookReviewController {
             throw new RuntimeException(e);
         }
     }
-    /*
-    * 더 많은 책 불러오기 api
-    *
-    * */
-
 
     /*
     * 리뷰 작성 api
     * - 책 ID, 별점, 리뷰 받아서 저장*/
+    @Operation(summary = "책 한 줄 리뷰 등록", description = "isbn, 리뷰 텍스트, 별점을 보내면 책을 저장하고 리뷰를 저장합니다. 예시 응답은 제목과 동일합니다.")
+    @PostMapping("/new-review")
+    public ResponseEntity<?> writeBookReview(Authentication authentication, @RequestBody BookReviewRequest bookReviewRequest) {
+        try{
+            Member member = (Member) authentication.getPrincipal(); // 맴버객체 가져옴
+            // 지금 책이 디비에 없으면 저장하기
+
+            Long isbn = bookReviewRequest.getIsbn();
+            log.info(isbn.toString());
+            if(!bookReviewService.existsByIsbn(isbn)){ // db에 해당 책이 저장되어 있지 않은 경우
+                String bookJson = bookReviewService.searchBookByIsbn(isbn); //isbn으로 카카오에서 전체 json 받아옴
+                Book book = bookReviewService.makeBook(bookJson); // 데이터 가공해서 book 객체로 얻어옴
+                bookReviewService.saveBook(book); // 북에 저장
+            }
+            // 책 리뷰 저장
+            Book book = bookReviewService.getBookByIsbn(isbn); // 책 객체 가져오기
+            bookReviewService.saveBookReview(new BookReview(bookReviewRequest.getReviewText(), bookReviewRequest.getRating(), book, member));
+            return ResponseEntity.ok(
+                    SuccessResponse.builder()
+                            .result(true)
+                            .status(HttpServletResponse.SC_OK)
+                            .data(null)
+                            .message("리뷰 저장 성공")
+                            .build()
+            );
+        }catch (Exception e){
+            throw new RuntimeException("Internal Error: " + e);
+        }
+    }
 
     /*
     * 리뷰 보이기 api
