@@ -4,7 +4,9 @@ import com.capstone.bszip.Book.domain.BookReview;
 import com.capstone.bszip.Book.domain.BookReviewLikes;
 import com.capstone.bszip.Book.repository.BookReviewLikesRepository;
 import com.capstone.bszip.Book.repository.BookReviewRepository;
+import com.capstone.bszip.Member.domain.Member;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,11 @@ public class BookReviewLikeService {
         } catch (Exception e){
             throw new RuntimeException("알수 없는 에러");
         }
+    }
+
+
+    public boolean isAleadyLiked(BookReview bookReview, Member member) {
+        return bookReviewLikesRepository.existsBookReviewLikesByBookReviewAndMember(bookReview, member);
     }
 
 }
