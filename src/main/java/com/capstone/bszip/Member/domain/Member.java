@@ -18,7 +18,7 @@ import java.util.Set;
 @Entity
 @Data
 @EntityListeners(AuditingEntityListener.class)
-@ToString(exclude = {"bookReviews"})
+@ToString(exclude = {"bookReviews", "bookReviewLikes"})
 @Table(name = "members") // 테이블 이름 매핑
 public class Member {
     @Id
@@ -58,4 +58,7 @@ public class Member {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookReview> bookReviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookReview> bookReviewLikes = new ArrayList<>();
 }

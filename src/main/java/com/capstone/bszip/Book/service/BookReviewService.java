@@ -10,13 +10,19 @@ import com.capstone.bszip.Book.repository.BookReviewRepository;
 import com.capstone.bszip.Member.domain.Member;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.*;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -119,11 +125,6 @@ public class BookReviewService {
         }
     }
 
-    /*
-    * 지금 문제 query만 생각해서 제목이나 작가로 검색할 때 query가 같아도 증가됨...
-    * 그리고 지금은 유저가 한명이지만,, 여러명의 유저가 같은 걸 검색하면 어카냐...
-    * 그냥 url을 [더보기]랑 / [처음 검색]이랑 분리하는 게 나을 듯....
-    * */
 
     // 역직렬화 - Jackson
     public AddIsEndBookResponse convertToBookSearchResponse(String bookJson){
@@ -245,5 +246,8 @@ public class BookReviewService {
 
     }
 
+    public BookReview getBookReviewById(Long bookReviewId) {
+        return bookReviewRepository.findBookReviewByBookReviewId(bookReviewId).orElseThrow(()-> new EntityNotFoundException("BookReview not found : "+ bookReviewId));
+    }
 
 }
