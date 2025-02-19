@@ -13,11 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.ErrorResponse;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Tag(name="Book Review Like", description = "책 한 줄 리뷰의 좋아요 관련 기능 api")
@@ -64,6 +60,38 @@ public class BookReviewLikeController {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Operation(summary = "책 한 줄 리뷰에 좋아요 취소", description = "[로그인 필수] 책 리뷰 아이디를 넘겨주어야 합니다!")
+    @DeleteMapping("/booksnap/unlike")
+    public ResponseEntity<?> unlikeBookReview(Authentication authentication, @RequestBody BookReviewLikeRequest bookReviewLikeRequest){
+        try{
+            // 멤버 객체랑 북 리뷰 객체 가져오기
+            Member member = (Member) authentication.getPrincipal();
+            Long bookReviewId = bookReviewLikeRequest.getBookReviewId();
+            BookReview bookReview = bookReviewService.getBookReviewById(bookReviewId);
+            // 좋아요 누른 적이 없는데 삭제하려고 하는 경우
+            if(!bookReviewLikeService.isAleadyLiked(bookReview, member)){
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                        member.getNickname()+"님이 좋아요 한 적이 없는 리뷰입니다...😅"
+                );
+            }
+            // 북 리뷰랑 멤버로 좋아요 객체 가져옴
+            BookReviewLikes bookReviewLikes = bookReviewLikeService.getLike(bookReview, member);
+            // 해당 좋아요 객체 삭제
+            bookReviewLikeService.deleteLike(bookReviewLikes);
+            return ResponseEntity.ok(
+                    SuccessResponse.builder()
+                    .result(true)
+                    .status(HttpServletResponse.SC_OK)
+                    .data(null)
+                    .message("리뷰 삭제 성공😊")
+                    .build()
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 }

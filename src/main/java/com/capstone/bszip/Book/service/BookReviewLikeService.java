@@ -35,4 +35,17 @@ public class BookReviewLikeService {
         return bookReviewLikesRepository.existsBookReviewLikesByBookReviewAndMember(bookReview, member);
     }
 
+    public BookReviewLikes getLike(BookReview bookReview, Member member) {
+        return bookReviewLikesRepository.findBookReviewLikesByBookReviewAndMember(bookReview, member).orElseThrow(()-> new EntityNotFoundException("해당 리뷰와 멤버로 리뷰를 찾을 수 없음"));
+    }
+
+    public void deleteLike(BookReviewLikes bookReviewLikes) {
+        try{
+            bookReviewLikesRepository.delete(bookReviewLikes);
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
+
+    }
+
 }
