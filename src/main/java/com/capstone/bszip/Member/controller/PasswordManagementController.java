@@ -1,5 +1,6 @@
 package com.capstone.bszip.Member.controller;
 
+import com.capstone.bszip.Member.service.MemberService;
 import com.capstone.bszip.Member.service.PasswordManagementService;
 import com.capstone.bszip.Member.service.dto.EmailMessage;
 import com.capstone.bszip.Member.service.dto.EmailRequest;
@@ -27,8 +28,11 @@ import org.springframework.web.client.HttpClientErrorException;
 @Tag(name="TempPassword", description = "임시 비밀번호")
 public class PasswordManagementController {
     private final PasswordManagementService passwordManagementService;
-    public PasswordManagementController(PasswordManagementService passwordManagementService) {
+    private final MemberService memberService;
+
+    public PasswordManagementController(PasswordManagementService passwordManagementService, MemberService memberService) {
         this.passwordManagementService = passwordManagementService;
+        this.memberService = memberService;
     }
     @Operation(summary = "임시 비밀번호 재설정 및 메일 전송")
     @ApiResponses({
@@ -47,6 +51,7 @@ public class PasswordManagementController {
                     .subject("[서점ZIP] 임시 비밀번호 발급")
                     .build();
             passwordManagementService.sendMail(emailMessage, "password");
+            memberService.setTempPassword(emailRequest.getEmail());
 
             return ResponseEntity.ok(
                     SuccessResponse.builder()
