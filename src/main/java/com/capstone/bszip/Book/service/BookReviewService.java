@@ -250,4 +250,16 @@ public class BookReviewService {
         return bookReviewRepository.findBookReviewByBookReviewId(bookReviewId).orElseThrow(()-> new EntityNotFoundException("BookReview not found : "+ bookReviewId));
     }
 
+    public BookReview getBookReviewByIdAndMember(Long bookReviewId, Member member){
+        return bookReviewRepository.findBookReviewsByBookReviewIdAndMember(bookReviewId, member).orElseThrow(()-> new EntityNotFoundException("BookReview not found : "+ bookReviewId));
+    }
+
+    public void deleteBookReview(BookReview bookReview){
+        try{
+            bookReviewRepository.delete(bookReview);
+        }catch (Exception e){
+            throw new RuntimeException("책 삭제 실패 : " +e);
+        }
+    }
+
 }

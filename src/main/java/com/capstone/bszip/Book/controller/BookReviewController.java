@@ -137,6 +137,28 @@ public class BookReviewController {
             throw new RuntimeException("Internal Error: " + e);
         }
     }
+    /*
+    * 책 리뷰 삭제 api
+    * 로그인한 회원이 작성한 리뷰 id 받아서 삭제
+    * */
+    @Operation(summary = "책 한 줄 리뷰 삭제", description = "[로그인 필수] 로그인한 사용자가 작성한 책 리뷰의 id를 받아와서 삭제")
+    @DeleteMapping("/reviews/{bookReviewId}")
+    public ResponseEntity<?> deleteBookReview(Authentication authentication, @PathVariable Long bookReviewId) {
+        try{
+            Member member = (Member) authentication.getPrincipal();
+            BookReview bookReview = bookReviewService.getBookReviewByIdAndMember(bookReviewId, member);
+            bookReviewService.deleteBookReview(bookReview);
+            return ResponseEntity.ok(
+                    SuccessResponse.builder()
+                            .result(true)
+                            .status(HttpServletResponse.SC_OK)
+                            .message("책 한 줄 리뷰 삭제 성공")
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /*
     * 리뷰 보이기 api
