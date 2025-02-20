@@ -1,5 +1,6 @@
 package com.capstone.bszip.Member.service;
 
+import com.capstone.bszip.Member.domain.Member;
 import com.capstone.bszip.Member.service.dto.EmailMessage;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -68,6 +69,10 @@ public class PasswordManagementService {
         Context context = new Context();
         context.setVariable("code", code);
         return templateEngine.process(type, context);
+    }
+
+    public boolean isItTempPassword(Member member){
+        return member.getTempPassword() != 0;
     }
 
 
