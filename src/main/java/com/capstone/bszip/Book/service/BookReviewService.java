@@ -4,6 +4,7 @@ import com.capstone.bszip.Book.domain.Book;
 import com.capstone.bszip.Book.domain.BookReview;
 import com.capstone.bszip.Book.dto.AddIsEndBookResponse;
 import com.capstone.bszip.Book.dto.BookReviewRequest;
+import com.capstone.bszip.Book.dto.BookReviewUpdateDto;
 import com.capstone.bszip.Book.dto.BookSearchResponse;
 import com.capstone.bszip.Book.repository.BookRepository;
 import com.capstone.bszip.Book.repository.BookReviewRepository;
@@ -248,6 +249,38 @@ public class BookReviewService {
 
     public BookReview getBookReviewById(Long bookReviewId) {
         return bookReviewRepository.findBookReviewByBookReviewId(bookReviewId).orElseThrow(()-> new EntityNotFoundException("BookReview not found : "+ bookReviewId));
+    }
+
+    public BookReview getBookReviewByIdAndMember(Long bookReviewId, Member member){
+        return bookReviewRepository.findBookReviewsByBookReviewIdAndMember(bookReviewId, member).orElseThrow(()-> new EntityNotFoundException("BookReview not found : "+ bookReviewId));
+    }
+
+    public void deleteBookReview(BookReview bookReview){
+        try{
+            bookReviewRepository.delete(bookReview);
+        }catch (Exception e){
+            throw new RuntimeException("책 삭제 실패 : " +e);
+        }
+    }
+
+    public void updateBookReview(Long bookReviewId, Member member, BookReviewUpdateDto bookReviewUpdateDto) {
+        try{
+            BookReview bookReview = bookReviewRepository.findBookReviewsByBookReviewIdAndMember(bookReviewId, member)
+                    .orElseThrow(()-> new EntityNotFoundException("BookReview not found : "+ bookReviewId));
+            int rating = bookReviewUpdateDto.getRating();
+            String reviewText = bookReviewUpdateDto.getReviewText();
+            bookReview = bookReview.toBuilder()
+                    .bookRating(rating)
+                    .bookReviewText(reviewText)
+                    .build();
+
+            bookReviewRepository.save(
+                    bookReview
+            );
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
+
     }
 
 }

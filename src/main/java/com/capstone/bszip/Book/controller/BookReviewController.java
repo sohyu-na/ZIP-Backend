@@ -4,6 +4,7 @@ import com.capstone.bszip.Book.domain.Book;
 import com.capstone.bszip.Book.domain.BookReview;
 import com.capstone.bszip.Book.dto.AddIsEndBookResponse;
 import com.capstone.bszip.Book.dto.BookReviewRequest;
+import com.capstone.bszip.Book.dto.BookReviewUpdateDto;
 import com.capstone.bszip.Book.dto.BookSearchResponse;
 import com.capstone.bszip.Book.service.BookReviewService;
 import com.capstone.bszip.Member.domain.Member;
@@ -124,7 +125,14 @@ public class BookReviewController {
             }
             // 책 리뷰 저장
             Book book = bookReviewService.getBookByIsbn(isbn); // 책 객체 가져오기
-            bookReviewService.saveBookReview(new BookReview(bookReviewRequest.getReviewText(), bookReviewRequest.getRating(), book, member));
+            bookReviewService.saveBookReview(
+                    BookReview.builder()
+                            .bookReviewText(bookReviewRequest.getReviewText())
+                            .book(book)
+                            .member(member)
+                            .bookRating(bookReviewRequest.getRating())
+                            .build()
+            );
             return ResponseEntity.ok(
                     SuccessResponse.builder()
                             .result(true)
@@ -135,6 +143,51 @@ public class BookReviewController {
             );
         }catch (Exception e){
             throw new RuntimeException("Internal Error: " + e);
+        }
+    }
+    /*
+    * 책 리뷰 삭제 api
+    * 로그인한 회원이 작성한 리뷰 id 받아서 삭제
+    * */
+    @Operation(summary = "책 한 줄 리뷰 삭제", description = "[로그인 필수] 로그인한 사용자가 작성한 책 리뷰의 id를 받아와서 삭제")
+    @DeleteMapping("/reviews/{bookReviewId}")
+    public ResponseEntity<?> deleteBookReview(Authentication authentication, @PathVariable Long bookReviewId) {
+        try{
+            Member member = (Member) authentication.getPrincipal();
+            BookReview bookReview = bookReviewService.getBookReviewByIdAndMember(bookReviewId, member);
+            bookReviewService.deleteBookReview(bookReview);
+            return ResponseEntity.ok(
+                    SuccessResponse.builder()
+                            .result(true)
+                            .status(HttpServletResponse.SC_OK)
+                            .message("책 한 줄 리뷰 삭제 성공")
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /*
+    * 책 리뷰 수정 api
+    * 로그인한 회원이 작성한 리뷰 id 받아서 수정
+    * */
+    @Operation(summary = "책 한 줄 리뷰 수정", description = "[로그인 필수] 로그인한 사용자가 작성한 책 리뷰의 id를 받아와서 수정")
+    @PutMapping("/reviews/{bookReviewId}")
+    public ResponseEntity<?> updateBookReview(Authentication authentication, @PathVariable Long bookReviewId, @RequestBody BookReviewUpdateDto bookReviewUpdateDto) {
+        try{
+            Member member = (Member) authentication.getPrincipal();
+            bookReviewService.updateBookReview(bookReviewId, member, bookReviewUpdateDto);
+            return ResponseEntity.ok(
+                    SuccessResponse.builder()
+                            .result(true)
+                            .status(HttpServletResponse.SC_OK)
+                            .message("책 한 줄 리뷰 수정 성공")
+                            .build()
+            );
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
