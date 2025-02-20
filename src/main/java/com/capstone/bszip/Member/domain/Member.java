@@ -39,8 +39,8 @@ public class Member {
     @Column(name = "join_type",nullable = false)
     private MemberJoinType memberJoinType;
 
-    @Column(name = "social_id")
-    private String socialId;
+    @Column(name = "temp_password", nullable = false)
+    private int tempPassword; // 0이면 사용자가 입력한 비밀번호고, 1이면 임시비밀번호임
 
     @CreatedDate
     @Column(name = "created_at", nullable = false)

@@ -9,6 +9,7 @@ import com.capstone.bszip.auth.refreshToken.RefreshTokenRepository;
 import com.capstone.bszip.auth.security.JwtUtil;
 import com.capstone.bszip.Member.service.dto.LoginRequest;
 import com.capstone.bszip.Member.service.dto.SignupRequest;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -65,6 +66,7 @@ public class MemberService {
         member.setCreatedAt(LocalDateTime.now());
         member.setUpdatedAt(LocalDateTime.now());
         member.setNickname(nickname);
+        member.setTempPassword(0);
         if(password.equals("kakao-password")){
             member.setMemberJoinType(MemberJoinType.KAKAO);
         } else {
@@ -123,6 +125,17 @@ public class MemberService {
 
     public void showAllMembers(){
         memberRepository.findAll().forEach(System.out::println);
+    }
+
+    public void setTempPassword(String email){
+        try{
+            Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("Member Not Found"));
+            member.setTempPassword(1);
+            memberRepository.save(member);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 }
 
