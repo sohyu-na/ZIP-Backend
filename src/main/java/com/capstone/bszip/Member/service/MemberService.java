@@ -10,6 +10,7 @@ import com.capstone.bszip.auth.security.JwtUtil;
 import com.capstone.bszip.Member.service.dto.LoginRequest;
 import com.capstone.bszip.Member.service.dto.SignupRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     private final Map<String, String> temporaryStorage = new HashMap<>(); // 임시 데이터 저장소
 
@@ -85,7 +87,7 @@ public class MemberService {
         if(memberOptional.isPresent()){
             Member member = memberOptional.get();
             RefreshToken token = new RefreshToken();
-            token.setMemberId(member.getMemberId());
+            token.setEmail(member.getEmail());
             token.setRefreshToken(refreshToken);
             token.setExpiryDate(Instant.now().plusSeconds(7 * 24 * 60 * 60));
 
@@ -112,6 +114,7 @@ public class MemberService {
             throw new RuntimeException("일치하지 않는 비밀번호입니다.");
         }
     }
+
     @Transactional
     public void setTempPassword(String email, String password){
         Member member = memberRepository.findByEmail(email)
