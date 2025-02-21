@@ -119,7 +119,27 @@ public class PasswordManagementController {
                             .message("임시 비밀번호인지 아닌지 확인")
                             .build()
             );
-        }catch (Exception e){
+        }catch (NullPointerException e){
+            return ResponseEntity.badRequest().body(
+                    ErrorResponse.builder()
+                    .result(false)
+                    .status(HttpServletResponse.SC_BAD_REQUEST)
+                            .message("값을 입력해주세요")
+                    .detail(e.getMessage())
+                    .build()
+            );
+        }
+        catch (AuthenticationException e){
+            return ResponseEntity.status(401).body(
+                    ErrorResponse.builder()
+                    .result(false)
+                    .status(HttpServletResponse.SC_UNAUTHORIZED)
+                    .message("인증되지 않은 사용자입니다.")
+                    .detail(e.getMessage())
+                    .build()
+            );
+        }
+        catch (Exception e){
             throw new RuntimeException(e);
         }
 
