@@ -5,6 +5,7 @@ import com.capstone.bszip.Member.service.MemberService;
 import com.capstone.bszip.Member.service.dto.SignupRequest;
 import com.capstone.bszip.Member.service.dto.TokenResponse;
 import com.capstone.bszip.auth.security.JwtUtil;
+import com.capstone.bszip.commonDto.ErrorResponse;
 import com.capstone.bszip.commonDto.SuccessResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,16 +29,18 @@ public class KakaoLoginController {
     @ResponseBody
     @GetMapping("/login")
     public ResponseEntity<?> kakaoLogin(@RequestParam String code, HttpServletResponse response){
-       String kakaoEmail = kakaoService.getkakaoEmail(code);
-       int loginWay = kakaoService.whichLoginWay(kakaoEmail);
+
+        String kakaoEmail = kakaoService.getkakaoEmail(code);
+        int loginWay = kakaoService.whichLoginWay(kakaoEmail);
+
+
 
        if(loginWay == 2){
-           return ResponseEntity.ok(
-                   SuccessResponse.builder()
-                           .result(true)
-                           .status(HttpServletResponse.SC_CONFLICT)
-                           .data(null)
-                           .message("기본 로그인으로 로그인해주세요.")
+           return ResponseEntity.status(409).body(
+                   ErrorResponse.builder()
+                   .result(false)
+                   .status(409)
+                           .message("기본 로그인으로 로그인해야 합니다.")
                            .build()
            );
        }
@@ -75,12 +78,11 @@ public class KakaoLoginController {
            }
        }
 
-        return ResponseEntity.ok(
-                SuccessResponse.builder()
-                        .result(true)
-                        .status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
-                        .data(null)
-                        .message("다시 시도해보세요")
+        return ResponseEntity.status(400).body(
+                ErrorResponse.builder()
+                .result(false)
+                .status(400)
+                        .message("Internal Server Error")
                         .build()
         );
 

@@ -6,6 +6,7 @@ import com.capstone.bszip.Book.dto.BookReviewLikeRequest;
 import com.capstone.bszip.Book.service.BookReviewLikeService;
 import com.capstone.bszip.Book.service.BookReviewService;
 import com.capstone.bszip.Member.domain.Member;
+import com.capstone.bszip.commonDto.ErrorResponse;
 import com.capstone.bszip.commonDto.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,9 +38,27 @@ public class BookReviewLikeController {
         try{
             // 멤버 가지고 오기
             Member member = (Member) authentication.getPrincipal();
+            if(member == null){
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                        ErrorResponse.builder()
+                                .result(false)
+                                .status(401)
+                                .message("인증되지 않은 사용자입니다.")
+                                .build()
+                );
+            }
             // 해당 책 한 줄 리뷰 가지고 오기
             Long bookReviewId = bookReviewLikeRequest.getBookReviewId();
             BookReview bookReview = bookReviewService.getBookReviewById(bookReviewId);
+            if(bookReview == null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        ErrorResponse.builder()
+                                .result(false)
+                                .message("해당되는 리뷰를 찾을 수 없습니다.")
+                                .build()
+                );
+            }
+
             if(bookReviewLikeService.isAleadyLiked(bookReview, member)){
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(
                         member.getNickname()+"님이 이미 좋아요하셨습니다...😅"
@@ -57,7 +76,16 @@ public class BookReviewLikeController {
                             .message(member.getNickname() + "의 좋아요 완료")
                             .build()
             );
-        } catch (Exception e) {
+        } catch (NullPointerException e){
+            return ResponseEntity.status(400).body(
+                    ErrorResponse.builder()
+                            .result(false)
+                            .message("누락된 값 존재")
+                            .detail(e.getMessage())
+                    .build()
+            );
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -68,6 +96,15 @@ public class BookReviewLikeController {
         try{
             // 멤버 객체랑 북 리뷰 객체 가져오기
             Member member = (Member) authentication.getPrincipal();
+            if(member == null){
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                        ErrorResponse.builder()
+                                .result(false)
+                                .status(401)
+                                .message("인증되지 않은 사용자입니다.")
+                                .build()
+                );
+            }
             Long bookReviewId = bookReviewLikeRequest.getBookReviewId();
             BookReview bookReview = bookReviewService.getBookReviewById(bookReviewId);
             // 좋아요 누른 적이 없는데 삭제하려고 하는 경우
@@ -88,7 +125,16 @@ public class BookReviewLikeController {
                     .message("리뷰 삭제 성공😊")
                     .build()
             );
-        } catch (Exception e) {
+        } catch (NullPointerException e){
+            return ResponseEntity.status(400).body(
+                    ErrorResponse.builder()
+                            .result(false)
+                            .message("누락된 값 존재")
+                            .detail(e.getMessage())
+                            .build()
+            );
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
 

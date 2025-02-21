@@ -8,6 +8,7 @@ import com.capstone.bszip.Book.dto.BookReviewUpdateDto;
 import com.capstone.bszip.Book.dto.BookSearchResponse;
 import com.capstone.bszip.Book.service.BookReviewService;
 import com.capstone.bszip.Member.domain.Member;
+import com.capstone.bszip.commonDto.ErrorResponse;
 import com.capstone.bszip.commonDto.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -70,6 +71,9 @@ public class BookReviewController {
     public ResponseEntity<?> searchBookByTitle(@RequestParam String query, @RequestParam(required = false, defaultValue = "1")int page) {
         try{
             String bookJson = bookReviewService.searchBooksByTitle(query, page);
+            if(bookJson == null){
+                return ResponseEntity.noContent().build();
+            }
             AddIsEndBookResponse addIsEndBookResponse = bookReviewService.convertToBookSearchResponse(bookJson);
             return ResponseEntity.ok(
                     SuccessResponse.builder()
@@ -79,7 +83,15 @@ public class BookReviewController {
                             .message("검색 성공")
                             .build()
             );
-        } catch (Exception e){
+        } catch (NullPointerException e){
+            return ResponseEntity.status(400).body(
+                    ErrorResponse.builder()
+                            .result(false)
+                            .status(HttpServletResponse.SC_BAD_REQUEST).message("검색할 사항을 입력해주세요")
+                    .build()
+            );
+        }
+        catch (Exception e){
             throw new RuntimeException(e);
         }
     }
@@ -92,6 +104,9 @@ public class BookReviewController {
     public ResponseEntity<?> searchBookByAuthor(@RequestParam String query, @RequestParam(required = false, defaultValue = "1")int page) {
         try{
             String bookJson = bookReviewService.searchBooksByAuthor(query, page);
+            if(bookJson == null){
+                return ResponseEntity.noContent().build();
+            }
             AddIsEndBookResponse addIsEndBookResponse = bookReviewService.convertToBookSearchResponse(bookJson);
             return ResponseEntity.ok(
                     SuccessResponse.builder()
@@ -101,7 +116,15 @@ public class BookReviewController {
                             .message("검색 성공")
                             .build()
             );
-        } catch (Exception e){
+        } catch (NullPointerException e){
+            return ResponseEntity.status(400).body(
+                    ErrorResponse.builder()
+                            .result(false)
+                            .status(HttpServletResponse.SC_BAD_REQUEST).message("검색할 사항을 입력해주세요")
+                            .build()
+            );
+        }
+        catch (Exception e){
             throw new RuntimeException(e);
         }
     }
@@ -116,6 +139,16 @@ public class BookReviewController {
             Member member = (Member) authentication.getPrincipal(); // 맴버객체 가져옴
             // 지금 책이 디비에 없으면 저장하기
 
+            if(member == null){
+                return ResponseEntity.status(401).body(
+                        ErrorResponse.builder()
+                        .result(false)
+                        .status(HttpServletResponse.SC_UNAUTHORIZED)
+                                .message("인증되지 않은 사용자입니다.")
+                                .build()
+                );
+            }
+
             Long isbn = bookReviewRequest.getIsbn();
             log.info(isbn.toString());
             if(!bookReviewService.existsByIsbn(isbn)){ // db에 해당 책이 저장되어 있지 않은 경우
@@ -125,6 +158,14 @@ public class BookReviewController {
             }
             // 책 리뷰 저장
             Book book = bookReviewService.getBookByIsbn(isbn); // 책 객체 가져오기
+            if(book == null){
+                return ResponseEntity.status(404).body(
+                        ErrorResponse.builder()
+                        .result(false)
+                        .status(HttpServletResponse.SC_NOT_FOUND)
+                                .message("찾을 수 없는 도서 입니다").build()
+                );
+            }
             bookReviewService.saveBookReview(
                     BookReview.builder()
                             .bookReviewText(bookReviewRequest.getReviewText())
@@ -141,7 +182,16 @@ public class BookReviewController {
                             .message("리뷰 저장 성공")
                             .build()
             );
-        }catch (Exception e){
+        }catch (NullPointerException e){
+            return ResponseEntity.status(400).body(
+                    ErrorResponse.builder()
+                    .result(false)
+                            .status(400)
+                            .message("누락된 값 존재")
+                            .build()
+            );
+        }
+        catch (Exception e){
             throw new RuntimeException("Internal Error: " + e);
         }
     }
@@ -154,7 +204,25 @@ public class BookReviewController {
     public ResponseEntity<?> deleteBookReview(Authentication authentication, @PathVariable Long bookReviewId) {
         try{
             Member member = (Member) authentication.getPrincipal();
+            if(member == null){
+                return ResponseEntity.status(401).body(
+                        ErrorResponse.builder()
+                                .result(false)
+                                .status(HttpServletResponse.SC_UNAUTHORIZED)
+                                .message("인증되지 않은 사용자입니다.")
+                                .build()
+                );
+            }
             BookReview bookReview = bookReviewService.getBookReviewByIdAndMember(bookReviewId, member);
+            if(bookReview == null){
+                return ResponseEntity.status(404).body(
+                        ErrorResponse.builder()
+                        .result(false)
+                        .status(HttpServletResponse.SC_NOT_FOUND)
+                                .message("찾을 수 없는 리뷰입니다")
+                        .build()
+                );
+            }
             bookReviewService.deleteBookReview(bookReview);
             return ResponseEntity.ok(
                     SuccessResponse.builder()
@@ -163,7 +231,16 @@ public class BookReviewController {
                             .message("책 한 줄 리뷰 삭제 성공")
                             .build()
             );
-        } catch (Exception e) {
+        }catch (NullPointerException e){
+            return ResponseEntity.status(400).body(
+                    ErrorResponse.builder()
+                            .result(false)
+                            .status(400)
+                            .message("누락된 값 존재")
+                            .build()
+            );
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -177,6 +254,24 @@ public class BookReviewController {
     public ResponseEntity<?> updateBookReview(Authentication authentication, @PathVariable Long bookReviewId, @RequestBody BookReviewUpdateDto bookReviewUpdateDto) {
         try{
             Member member = (Member) authentication.getPrincipal();
+            if(member == null){
+                return ResponseEntity.status(401).body(
+                        ErrorResponse.builder()
+                                .result(false)
+                                .status(HttpServletResponse.SC_UNAUTHORIZED)
+                                .message("인증되지 않은 사용자입니다.")
+                                .build()
+                );
+            }
+            if(bookReviewService.existsBookReview(bookReviewId)){
+                return ResponseEntity.status(404).body(
+                        ErrorResponse.builder()
+                                .result(false)
+                        .status(HttpServletResponse.SC_NOT_FOUND)
+                                .message("찾을 수 없는 책 리뷰 입니다")
+                                .build()
+                );
+            }
             bookReviewService.updateBookReview(bookReviewId, member, bookReviewUpdateDto);
             return ResponseEntity.ok(
                     SuccessResponse.builder()
@@ -186,7 +281,16 @@ public class BookReviewController {
                             .build()
             );
 
-        } catch (Exception e) {
+        }catch (NullPointerException e){
+            return ResponseEntity.status(400).body(
+                    ErrorResponse.builder()
+                            .result(false)
+                            .status(400)
+                            .message("누락된 값 존재")
+                            .build()
+            );
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface BookReviewRepository extends JpaRepository<BookReview, Long> {
     Optional<BookReview> findBookReviewByBookReviewId(Long bookReviewId);
     Optional<BookReview> findBookReviewsByBookReviewIdAndMember(Long bookReviewId, Member member);
+    boolean existsBookReviewByBookReviewId(Long bookReviewId);
 }

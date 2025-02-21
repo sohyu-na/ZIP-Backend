@@ -283,4 +283,7 @@ public class BookReviewService {
 
     }
 
+    public boolean existsBookReview(Long bookReviewId){
+        return bookReviewRepository.existsById(bookReviewId);
+    }
 }
