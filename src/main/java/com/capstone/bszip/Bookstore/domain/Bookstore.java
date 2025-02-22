@@ -31,4 +31,7 @@ public class Bookstore {
     @Column(name = "description")
     private String description;
 
+    @Column(name="rating")
+    private Double rating;
+
 }

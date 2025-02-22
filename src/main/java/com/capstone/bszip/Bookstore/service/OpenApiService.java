@@ -2,6 +2,7 @@ package com.capstone.bszip.Bookstore.service;
 
 import com.capstone.bszip.Bookstore.domain.Bookstore;
 import com.capstone.bszip.Bookstore.repository.BookstoreRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,7 @@ public class OpenApiService {
             bookstore.setHours((String) item.get("DESCRIPTION"));
             bookstore.setAddress((String) item.get("ADDRESS"));
             bookstore.setDescription((String) item.get("SUB_DESCRIPTION"));
+            bookstore.setRating(0.0);//초기화
             bookstoreRepository.save(bookstore);
         }
     }
@@ -79,6 +81,7 @@ public class OpenApiService {
             bookstore.setHours((String) item.get("DESCRIPTION"));
             bookstore.setAddress((String) item.get("ADDRESS"));
             bookstore.setDescription((String) item.get("SUB_DESCRIPTION"));
+            bookstore.setRating(0.0);//초기화
             bookstoreRepository.save(bookstore);
         }
     }
@@ -107,6 +110,7 @@ public class OpenApiService {
                     + "일요일개점마감시간" + convertDecimalToTime(item.get("SUN_OPN_BSNS_TIME")) + "~" + convertDecimalToTime(item.get("SUN_CLOS_TIME")));
             bookstore.setAddress((String) item.get("FCLTY_ROAD_NM_ADDR"));
             bookstore.setDescription((String) item.get("ADIT_DC"));
+            bookstore.setRating(0.0);//초기화
             bookstoreRepository.save(bookstore);
         }
     }
