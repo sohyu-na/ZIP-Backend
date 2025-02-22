@@ -3,27 +3,48 @@ package com.capstone.bszip.Bookstore.service;
 import com.capstone.bszip.Bookstore.domain.Bookstore;
 import com.capstone.bszip.Bookstore.domain.BookstoreCategory;
 import com.capstone.bszip.Bookstore.repository.BookstoreRepository;
+import com.capstone.bszip.Bookstore.service.dto.BookstoreResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BookstoreService {
     private final BookstoreRepository bookstoreRepository;
     @Transactional
-    public List<Bookstore> searchBookstores(String keyword) {
-        return bookstoreRepository.findByNameContainingIgnoreCaseOrAddressContainingIgnoreCase(keyword,keyword);
+    public List<BookstoreResponse> searchBookstores(String keyword) {
+        List<Bookstore> bookstores = bookstoreRepository.findByNameContainingIgnoreCaseOrAddressContainingIgnoreCase(keyword, keyword);
+
+        return bookstores.stream()
+                .map(this::convertToBookstoreResponse)
+                .collect(Collectors.toList());
     }
 
     @Transactional
-    public List<Bookstore> getBookstoresByCategory(BookstoreCategory category){
+    public List<BookstoreResponse> getBookstoresByCategory(BookstoreCategory category){
         if(category == null){
-            return bookstoreRepository.findAll();
+            List <Bookstore> bookstores = bookstoreRepository.findAll();
+            return bookstores.stream()
+                    .map(this::convertToBookstoreResponse)
+                    .collect(Collectors.toList());
         }
-        return bookstoreRepository.findByBookstoreCategory(category);
+        List <Bookstore> bookstores =bookstoreRepository.findByBookstoreCategory(category);
+        return bookstores.stream()
+                .map(this::convertToBookstoreResponse)
+                .collect(Collectors.toList());
+    }
+
+    private BookstoreResponse convertToBookstoreResponse (Bookstore bookstore){
+        return new BookstoreResponse(
+                bookstore.getName(),
+                bookstore.getRating(),
+                bookstore.getBookstoreCategory(),
+                bookstore.getAddress()
+        );
     }
 
 }

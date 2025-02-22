@@ -3,6 +3,7 @@ package com.capstone.bszip.Bookstore.controller;
 import com.capstone.bszip.Bookstore.domain.Bookstore;
 import com.capstone.bszip.Bookstore.domain.BookstoreCategory;
 import com.capstone.bszip.Bookstore.service.BookstoreService;
+import com.capstone.bszip.Bookstore.service.dto.BookstoreResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -44,7 +45,7 @@ public class BookstoreController {
     @GetMapping("/search")
     public ResponseEntity<?> searchBookstores(@RequestParam String keyword) {
         try {
-            List<Bookstore> bookstores = bookstoreService.searchBookstores(keyword);
+            List<BookstoreResponse> bookstores = bookstoreService.searchBookstores(keyword);
             if (bookstores.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("검색어에 해당하는 서점이 없습니다.");
@@ -72,7 +73,7 @@ public class BookstoreController {
     public ResponseEntity<?> getBookstoresByCategory(
             @Parameter(description = "조회할 서점 카테고리 (선택사항)") @RequestParam(required = false) BookstoreCategory category){
         try{
-            List<Bookstore> bookstores = bookstoreService.getBookstoresByCategory(category);
+            List<BookstoreResponse> bookstores = bookstoreService.getBookstoresByCategory(category);
             return ResponseEntity.ok(bookstores);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

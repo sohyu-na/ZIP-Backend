@@ -1,14 +1,15 @@
 package com.capstone.bszip.Bookstore.service.dto;
 
+import com.capstone.bszip.Bookstore.domain.BookstoreCategory;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class BookstoreResponse {
     private String name;
-    //private double rating; 별점 _ 리뷰 후에
-    private String category;
-    private String phone;
-    private String hours;
+    private double rating;
+    private BookstoreCategory bookstoreCategory;
     private String address;
-    private String description;
+
 }
