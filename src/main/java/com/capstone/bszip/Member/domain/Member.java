@@ -1,6 +1,7 @@
 package com.capstone.bszip.Member.domain;
 
 import com.capstone.bszip.Book.domain.BookReview;
+import com.capstone.bszip.Book.domain.PickedBook;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
@@ -61,4 +62,7 @@ public class Member {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookReview> bookReviewLikes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PickedBook> pickedBooks = new ArrayList<>();
 }
