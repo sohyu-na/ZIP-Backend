@@ -46,6 +46,7 @@ public class BookstoreService {
             addressExceptCode =addressExceptCode.substring(8);
         }
         return new BookstoreResponse(
+                bookstore.getBookstoreId(),
                 bookstore.getName(),
                 bookstore.getRating(),
                 bookstore.getBookstoreCategory(),

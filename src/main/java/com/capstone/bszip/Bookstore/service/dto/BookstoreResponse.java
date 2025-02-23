@@ -7,6 +7,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class BookstoreResponse {
+    private Long bookstoreId;
     private String name;
     private double rating;
     private BookstoreCategory bookstoreCategory;
