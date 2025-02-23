@@ -2,11 +2,9 @@ package com.capstone.bszip.Book.service;
 
 import com.capstone.bszip.Book.domain.Book;
 import com.capstone.bszip.Book.domain.BookReview;
-import com.capstone.bszip.Book.dto.AddIsEndBookResponse;
-import com.capstone.bszip.Book.dto.BookReviewRequest;
-import com.capstone.bszip.Book.dto.BookReviewUpdateDto;
-import com.capstone.bszip.Book.dto.BookSearchResponse;
+import com.capstone.bszip.Book.dto.*;
 import com.capstone.bszip.Book.repository.BookRepository;
+import com.capstone.bszip.Book.repository.BookReviewLikesRepository;
 import com.capstone.bszip.Book.repository.BookReviewRepository;
 import com.capstone.bszip.Member.domain.Member;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,15 +13,12 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.*;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -38,13 +33,17 @@ public class BookReviewService {
     private final BookRepository bookRepository;
     private final BookReviewRepository bookReviewRepository;
     private final ObjectMapper objectMapper;
+    private final BookReviewLikeService bookReviewLikeService;
+    private final BookReviewLikesRepository bookReviewLikesRepository;
     @Value("${kakao.client.id}")
     private String kakaoApiKey;
 
-    public BookReviewService(BookRepository bookRepository, ObjectMapper objectMapper, BookReviewRepository bookReviewRepository) {
+    public BookReviewService(BookRepository bookRepository, ObjectMapper objectMapper, BookReviewRepository bookReviewRepository, BookReviewLikeService bookReviewLikeService, BookReviewLikesRepository bookReviewLikesRepository) {
         this.bookRepository = bookRepository;
         this.objectMapper = objectMapper;
         this.bookReviewRepository = bookReviewRepository;
+        this.bookReviewLikeService = bookReviewLikeService;
+        this.bookReviewLikesRepository = bookReviewLikesRepository;
     }
 
     // kakao book api에서 책 제목로 검색된 책 정보 json 가져오기 -> 책제목 검색이랑 작가 검색이랑 너무 공통되는 부분이 많아서 걍 통일시켜야 될 거 같으다...
@@ -286,4 +285,33 @@ public class BookReviewService {
     public boolean existsBookReview(Long bookReviewId){
         return bookReviewRepository.existsById(bookReviewId);
     }
+
+    public Page<BookReviewResponse> getRecentReviews(Pageable pageable, Member member){
+        return bookReviewRepository.findBookReviewsByCreatedAtDesc(pageable)
+                .map(bookReview -> {
+                    Boolean isLiked = null;
+                    if(member != null){
+                        isLiked = bookReviewLikesRepository.existsBookReviewLikesByBookReviewAndMember(bookReview, member);
+                    }
+                    Book book = bookReview.getBook();
+                    boolean isLikes = bookReviewLikesRepository.existsBookReviewLikesByBookReviewAndMember(bookReview, member);
+                    return BookReviewResponse.builder()
+                            .bookReviewId(bookReview.getBookReviewId()) // 리뷰 아이디
+                            .createdAt(bookReview.getCreatedAt()) // 생성시간
+                            .nickname(bookReview.getMember().getNickname()) // 작성자
+                            .authors(book.getAuthors()) // 작가
+                            .thumbnailUrl(book.getBookImageUrl()) // 이미지
+                            .title(book.getBookName()) // 책 제목
+                            .publisher(book.getPublisher()) // 출판사
+                            .isbn(book.getBookId().toString()) // isbn코드
+                            .rating(bookReview.getBookRating()) // 별점
+                            .reviewText(bookReview.getBookReviewText()) // 리뷰 내용
+                            .likesCount(bookReview.getBookReviewLikesList().size())// 좋아요 개수
+                            .isLiked(isLiked)
+                            .build();
+                        }
+
+                );
+    }
+
 }
