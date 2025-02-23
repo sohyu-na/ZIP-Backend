@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.capstone.bszip.Bookstore.domain.BookstoreCategory.CHILD;
+
 @Service
 @RequiredArgsConstructor
 public class BookstoreService {
@@ -39,11 +41,15 @@ public class BookstoreService {
     }
 
     private BookstoreResponse convertToBookstoreResponse (Bookstore bookstore){
+        String addressExceptCode = bookstore.getAddress();
+        if(bookstore.getBookstoreCategory()!=CHILD) {
+            addressExceptCode =addressExceptCode.substring(8);
+        }
         return new BookstoreResponse(
                 bookstore.getName(),
                 bookstore.getRating(),
                 bookstore.getBookstoreCategory(),
-                bookstore.getAddress()
+                addressExceptCode
         );
     }
 
