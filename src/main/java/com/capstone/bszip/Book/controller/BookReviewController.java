@@ -2,10 +2,7 @@ package com.capstone.bszip.Book.controller;
 
 import com.capstone.bszip.Book.domain.Book;
 import com.capstone.bszip.Book.domain.BookReview;
-import com.capstone.bszip.Book.dto.AddIsEndBookResponse;
-import com.capstone.bszip.Book.dto.BookReviewRequest;
-import com.capstone.bszip.Book.dto.BookReviewUpdateDto;
-import com.capstone.bszip.Book.dto.BookSearchResponse;
+import com.capstone.bszip.Book.dto.*;
 import com.capstone.bszip.Book.service.BookReviewService;
 import com.capstone.bszip.Member.domain.Member;
 import com.capstone.bszip.commonDto.ErrorResponse;
@@ -20,11 +17,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -298,7 +303,84 @@ public class BookReviewController {
     /*
     * 리뷰 보이기 api
     * - 최신순, 좋아요, 요즘 인기 있는
-    * 추후 추가 */
+   */
+    @Operation(summary = "최신순 리뷰 보여주기", description = """
+            **page와 size만** 입력하세요! sort는 없애고 확인해주세요🥲
+            [로그인 시] isLiked가 포함되어 로그인한 해당 회원이 좋아요를 눌렀는지 누르지 않았는지를 가져옵니다.
+            [공통] last 값으로 헌재 페이지가 끝인지 확인 가능
+            """)
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = BookReviewResponse.class),
+            examples = {@ExampleObject(
+                    name = "Success example : 로그인한 경우",
+                    value = """
+                            {
+                              "content": [
+                                {
+                                  "bookReviewId": 2,
+                                  "createdAt": "2025-02-23 15:14:20",
+                                  "nickname": "이구역독짱",
+                                  "thumbnailUrl": "https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6148379%3Ftimestamp%3D20241113160723",
+                                  "title": "나는 오래된 거리처럼 너를 사랑하고",
+                                  "authors": [
+                                    "진은영"
+                                  ],
+                                  "publisher": "문학과지성사",
+                                  "isbn": "9788932040448",
+                                  "rating": 4,
+                                  "reviewText": "진은영님의 이야기",
+                                  "likesCount": 1,
+                                  "isLiked": true
+                                }
+                              ],
+                              "pageable": {
+                                "pageNumber": 0,
+                                "pageSize": 1,
+                                "sort": {
+                                  "empty": false,
+                                  "sorted": true,
+                                  "unsorted": false
+                                },
+                                "offset": 0,
+                                "paged": true,
+                                "unpaged": false
+                              },
+                              "last": false,
+                              "totalElements": 2,
+                              "totalPages": 2,
+                              "size": 1,
+                              "number": 0,
+                              "sort": {
+                                "empty": false,
+                                "sorted": true,
+                                "unsorted": false
+                              },
+                              "first": true,
+                              "numberOfElements": 1,
+                              "empty": false
+                            }
+                            """
+            )}
+
+    )),})
+    @GetMapping("/recent") // 현재 사용자가 좋아요 눌렀는지 안 눌렀는지도 추가하기
+    public ResponseEntity<?> getRecentReviews(@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+                                              @AuthenticationPrincipal Member member) {
+        try{
+            Page<BookReviewResponse> bookReviews = bookReviewService.getRecentReviews(pageable, member);
+            return ResponseEntity.ok(bookReviews);
+        }catch (NullPointerException e){
+            return ResponseEntity.status(400).body(
+                    ErrorResponse.builder()
+                    .result(false)
+                    .status(400)
+                            .message("입력이 잘 못된 값 존재")
+                    .build()
+            );
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /*
     * 책 담기 api

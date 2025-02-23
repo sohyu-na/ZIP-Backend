@@ -2,6 +2,7 @@ package com.capstone.bszip.Book.domain;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -12,6 +13,7 @@ import java.util.List;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
+@Getter
 @ToString(exclude = {"bookReviews"})
 @Table(name="Books")
 public class Book {
