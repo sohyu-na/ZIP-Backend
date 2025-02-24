@@ -12,5 +12,6 @@ public class BookstoreResponse {
     private double rating;
     private BookstoreCategory bookstoreCategory;
     private String address;
+    private boolean liked;
 
 }

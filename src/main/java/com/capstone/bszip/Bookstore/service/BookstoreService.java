@@ -4,6 +4,7 @@ import com.capstone.bszip.Bookstore.domain.Bookstore;
 import com.capstone.bszip.Bookstore.domain.BookstoreCategory;
 import com.capstone.bszip.Bookstore.repository.BookstoreRepository;
 import com.capstone.bszip.Bookstore.service.dto.BookstoreResponse;
+import com.capstone.bszip.Member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -22,41 +23,53 @@ public class BookstoreService {
     private final RedisTemplate<String,String> redisTemplate;
 
     @Transactional
-    public List<BookstoreResponse> searchBookstores(String keyword) {
+    public List<BookstoreResponse> searchBookstores(String keyword, Member member) {
         List<Bookstore> bookstores = bookstoreRepository.findByNameContainingIgnoreCaseOrAddressContainingIgnoreCase(keyword, keyword);
 
         return bookstores.stream()
-                .map(this::convertToBookstoreResponse)
+                .map(Bookstore -> convertToBookstoreResponse(Bookstore, member))
                 .collect(Collectors.toList());
     }
 
     @Transactional
-    public List<BookstoreResponse> getBookstoresByCategory(BookstoreCategory category){
+    public List<BookstoreResponse> getBookstoresByCategory(BookstoreCategory category, Member member){
         if(category == null){
             List <Bookstore> bookstores = bookstoreRepository.findAll();
             return bookstores.stream()
-                    .map(this::convertToBookstoreResponse)
+                    .map(Bookstore -> convertToBookstoreResponse(Bookstore,member))
                     .collect(Collectors.toList());
         }
         List <Bookstore> bookstores =bookstoreRepository.findByBookstoreCategory(category);
         return bookstores.stream()
-                .map(this::convertToBookstoreResponse)
+                .map(Bookstore -> convertToBookstoreResponse(Bookstore,member))
                 .collect(Collectors.toList());
     }
-
-    private BookstoreResponse convertToBookstoreResponse (Bookstore bookstore){
+    private BookstoreResponse convertToBookstoreResponse (Bookstore bookstore,Member member){
         String addressExceptCode = bookstore.getAddress();
         if(bookstore.getBookstoreCategory()!=CHILD) {
             addressExceptCode =addressExceptCode.substring(8);
         }
+        boolean isLiked;
+        if(member != null){
+            isLiked = checkIfBookstoreLiked(member.getMemberId(),bookstore.getBookstoreId());
+        }else{ //로그인 안한 사용자
+            isLiked = false;
+        }
+
         return new BookstoreResponse(
                 bookstore.getBookstoreId(),
                 bookstore.getName(),
                 bookstore.getRating(),
                 bookstore.getBookstoreCategory(),
-                addressExceptCode
+                addressExceptCode,
+                isLiked
         );
     }
+    private boolean checkIfBookstoreLiked(Long memberId, Long bookstoreId) {
+        String memberKey = "member:liked:bookstores:" + memberId;
+        return redisTemplate.opsForSet().isMember(memberKey, bookstoreId.toString());
+    }
+
     @Transactional
     public void toggleLikeBookstore(Long memberId, Long bookstoreId){
         String memberKey = "member:liked:bookstores:" + memberId;
@@ -74,8 +87,8 @@ public class BookstoreService {
     }
 
     @Transactional
-    public List<BookstoreResponse> getLikedBookstores(Long memberId){
-        String memberKey = "member:liked:bookstores:" + memberId;
+    public List<BookstoreResponse> getLikedBookstores(Member member){
+        String memberKey = "member:liked:bookstores:" + member.getMemberId();
         Set<String> bookstoreIds = redisTemplate.opsForSet().members(memberKey);
 
         List<Long> longBookstoreIds = bookstoreIds.stream()
@@ -84,7 +97,7 @@ public class BookstoreService {
         List <Bookstore> bookstores = bookstoreRepository.findAllById(longBookstoreIds);
 
         return bookstores.stream()
-                .map(this::convertToBookstoreResponse)
+                .map(Bookstore -> convertToBookstoreResponse(Bookstore,member))
                 .collect(Collectors.toList());
 
     }
