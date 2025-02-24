@@ -1,6 +1,5 @@
-package com.capstone.bszip.Book.repository;
+package com.capstone.bszip.Book.dto;
 
-import com.capstone.bszip.Book.dto.BookInfoDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,6 +9,7 @@ import java.util.Date;
 @Getter
 @Builder
 public class BooksnapPreviewDto {
+    private Long bookReviewId;
     private String userName;
     private Date createdAt;
     private String like;

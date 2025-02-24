@@ -6,7 +6,7 @@ import com.capstone.bszip.Book.dto.*;
 import com.capstone.bszip.Book.repository.BookRepository;
 import com.capstone.bszip.Book.repository.BookReviewLikesRepository;
 import com.capstone.bszip.Book.repository.BookReviewRepository;
-import com.capstone.bszip.Book.repository.BooksnapPreviewDto;
+import com.capstone.bszip.Book.dto.BooksnapPreviewDto;
 import com.capstone.bszip.Member.domain.Member;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,7 +27,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 
 @Slf4j
@@ -307,6 +306,7 @@ public class BookReviewService {
                             .build();
 
                     return BooksnapPreviewDto.builder()
+                            .bookReviewId(bookReview.getBookReviewId())
                             .userName(bookReview.getMember().getNickname())
                             .createdAt(Timestamp.valueOf( bookReview.getCreatedAt() ) )
                             .like(Integer.toString(bookReview.getBookReviewLikesList().size()))

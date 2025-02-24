@@ -3,7 +3,7 @@ package com.capstone.bszip.Book.controller;
 import com.capstone.bszip.Book.domain.Book;
 import com.capstone.bszip.Book.domain.BookReview;
 import com.capstone.bszip.Book.dto.*;
-import com.capstone.bszip.Book.repository.BooksnapPreviewDto;
+import com.capstone.bszip.Book.dto.BooksnapPreviewDto;
 import com.capstone.bszip.Book.service.BookReviewService;
 import com.capstone.bszip.Member.domain.Member;
 import com.capstone.bszip.commonDto.ErrorResponse;
@@ -22,15 +22,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
