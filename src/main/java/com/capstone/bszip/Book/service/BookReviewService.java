@@ -309,7 +309,7 @@ public class BookReviewService {
                             .bookReviewId(bookReview.getBookReviewId())
                             .userName(bookReview.getMember().getNickname())
                             .createdAt(Timestamp.valueOf( bookReview.getCreatedAt() ) )
-                            .like(Integer.toString(bookReview.getBookReviewLikesList().size()))
+                            .like(bookReview.getBookReviewLikesList().size())
                             .review(bookReview.getBookReviewText())
                             .isLiked(isLiked)
                             .rating(bookReview.getBookRating())
