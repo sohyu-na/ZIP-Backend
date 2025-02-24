@@ -1,5 +1,6 @@
 package com.capstone.bszip.config;
 
+import com.capstone.bszip.Member.repository.MemberRepository;
 import com.capstone.bszip.auth.AuthService;
 import com.capstone.bszip.auth.security.JwtFilter;
 import com.capstone.bszip.auth.security.JwtUtil;
@@ -62,13 +63,13 @@ public class SecurityConfig {
             "/webjars/**"
     };
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtUtil jwtUtil, AuthService authService) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtUtil jwtUtil, AuthService authService, MemberRepository memberRepository) throws Exception {
 
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable()) //CSRF 비활성화
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(new JwtFilter(jwtUtil, authService), ExceptionTranslationFilter.class)
+                .addFilterBefore(new JwtFilter(jwtUtil, authService,memberRepository ), ExceptionTranslationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(SWAGGER_WHITELIST).permitAll() // Swagger UI 접근 허용
                         .requestMatchers("/admin/**").hasRole("ADMIN")

@@ -4,6 +4,7 @@ import com.capstone.bszip.Bookstore.domain.Bookstore;
 import com.capstone.bszip.Bookstore.domain.BookstoreCategory;
 import com.capstone.bszip.Bookstore.service.BookstoreService;
 import com.capstone.bszip.Bookstore.service.dto.BookstoreResponse;
+import com.capstone.bszip.Member.domain.Member;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,10 +16,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -75,6 +74,62 @@ public class BookstoreController {
         try{
             List<BookstoreResponse> bookstores = bookstoreService.getBookstoresByCategory(category);
             return ResponseEntity.ok(bookstores);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("서버 오류가 발생했습니다.");
+        }
+    }
+
+    @Operation(
+            summary = "서점 찜하기/찜 취소",
+            description = "특정 서점에 대해 찜하기 또는 찜 취소를 수행합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공적으로 찜하기/찜 취소 수행"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류 발생",
+                    content = @Content(schema = @Schema(implementation = String.class)))
+    })
+    @PostMapping("/{bookstoreId}/toggle-like")
+    public ResponseEntity<?> toggleLikeBookstore(@PathVariable Long bookstoreId, @AuthenticationPrincipal Member member){
+        try {
+            if (member == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("인증되지 않은 사용자입니다.");
+            }
+            Long memberId = member.getMemberId();
+            bookstoreService.toggleLikeBookstore(memberId, bookstoreId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("서버 오류가 발생했습니다.");
+        }
+    }
+
+    @Operation(
+            summary = "찜한 서점 목록 조회",
+            description = "현재 로그인한 사용자가 찜한 서점 목록을 반환합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공적으로 찜한 서점 목록 반환"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류 발생",
+                    content = @Content(schema = @Schema(implementation = String.class)))
+    })
+    @GetMapping("/liked")
+    public ResponseEntity<?> getLikedBookstores(
+            @Parameter(hidden = true) @AuthenticationPrincipal Member member
+    ) {
+        try {
+            if (member == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("인증되지 않은 사용자입니다.");
+            }
+            Long memberId = member.getMemberId();
+            List<BookstoreResponse> likedBookstores = bookstoreService.getLikedBookstores(memberId);
+            return ResponseEntity.ok(likedBookstores);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("서버 오류가 발생했습니다.");

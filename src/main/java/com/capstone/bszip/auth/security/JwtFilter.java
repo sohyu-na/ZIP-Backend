@@ -1,5 +1,7 @@
 package com.capstone.bszip.auth.security;
 
+import com.capstone.bszip.Member.domain.Member;
+import com.capstone.bszip.Member.repository.MemberRepository;
 import com.capstone.bszip.auth.AuthService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -13,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -26,7 +29,7 @@ import java.util.List;
 public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final AuthService authService;
-
+    private final MemberRepository memberRepository;
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -68,8 +71,10 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         String email = claims.getSubject();
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(()-> new UsernameNotFoundException("Username not found: "+ email));
         List <GrantedAuthority> authorities = Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"));
-        Authentication authentication = new UsernamePasswordAuthenticationToken(email, null, authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(member, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         System.out.println("Claims: " + claims);
