@@ -7,10 +7,13 @@ import com.capstone.bszip.Book.service.PickedBookService;
 import com.capstone.bszip.Member.domain.Member;
 import com.capstone.bszip.commonDto.ErrorResponse;
 import com.capstone.bszip.commonDto.SuccessResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name="책 담기", description = "책 담기 관련 api")
 @RestController
 @RequestMapping("/api/pick-book")
 public class PickedBookController {
@@ -21,7 +24,9 @@ public class PickedBookController {
         this.pickedBookService = pickedBookService;
         this.bookReviewService = bookReviewService;
     }
-
+    @Operation(summary = "책 담기 ", description = """
+            [로그인 필수] 책 담기 API
+            """)
     @PostMapping
     public ResponseEntity<?> createPickedBook(@AuthenticationPrincipal Member member,
                                            @RequestBody PickedBookRequest pickedBookRequest) {
@@ -55,7 +60,9 @@ public class PickedBookController {
 
 
     }
-
+    @Operation(summary = "책 담기 취소 ", description = """
+            [로그인 필수] 책 담기 취소 API
+            """)
     @DeleteMapping
     public ResponseEntity<?> deletePickedBook(@AuthenticationPrincipal Member member,
                                               @RequestBody PickedBookRequest pickedBookRequest) {
