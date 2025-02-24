@@ -14,7 +14,7 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 @Getter
-@ToString(exclude = {"bookReviews"})
+@ToString(exclude = {"bookReviews", "pickedBooks"})
 @Table(name="Books")
 public class Book {
     @Id

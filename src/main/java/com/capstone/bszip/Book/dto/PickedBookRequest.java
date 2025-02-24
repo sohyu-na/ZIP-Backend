@@ -2,11 +2,12 @@ package com.capstone.bszip.Book.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
+@NoArgsConstructor
 public class PickedBookRequest {
-    Long isbn;
+    String isbn;
 }

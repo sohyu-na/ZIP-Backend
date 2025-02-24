@@ -31,7 +31,8 @@ public class PickedBookController {
     public ResponseEntity<?> createPickedBook(@AuthenticationPrincipal Member member,
                                            @RequestBody PickedBookRequest pickedBookRequest) {
         try{
-            Long isbn = pickedBookRequest.getIsbn();
+            System.out.println(member);
+            Long isbn = Long.parseLong(pickedBookRequest.getIsbn());
             Book book = bookReviewService.getBookByIsbn(isbn);
             if (book == null) {
                 return ResponseEntity.status(404).body(
@@ -41,16 +42,18 @@ public class PickedBookController {
                 );
             }
 
-            if(!pickedBookService.existsPikedBook(book, member)){
+            if(pickedBookService.existsPickedBook(book, member)){
                 return ResponseEntity.status(409).body(
                         ErrorResponse.builder()
                                 .message("이미 담은 책이에요!🥲")
                                 .build()
                 );
             }
-            pickedBookService.savePikedBook(book, member);
+            pickedBookService.savePickedBook(book, member);
             return ResponseEntity.status(201).body(
                     SuccessResponse.builder()
+                            .result(true)
+                            .status(200)
                             .message("책 담기 완료!")
                             .build()
             );
@@ -67,14 +70,14 @@ public class PickedBookController {
     public ResponseEntity<?> deletePickedBook(@AuthenticationPrincipal Member member,
                                               @RequestBody PickedBookRequest pickedBookRequest) {
         try{
-            Book book = bookReviewService.getBookByIsbn(pickedBookRequest.getIsbn());
+            Book book = bookReviewService.getBookByIsbn(Long.parseLong(pickedBookRequest.getIsbn()));
             if (book == null) {
                 return ResponseEntity.status(404).body(
                         ErrorResponse.builder()
                                 .message("담은 적이 없는 책입니다!😅")
                 );
             }
-            pickedBookService.deletePikedBook(book, member);
+            pickedBookService.deletePickedBook(book, member);
             return ResponseEntity.ok(
                     SuccessResponse.builder()
                             .message("책 담기가 취소되었습니다!")

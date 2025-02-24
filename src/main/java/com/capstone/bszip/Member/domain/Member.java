@@ -19,7 +19,7 @@ import java.util.Set;
 @Entity
 @Data
 @EntityListeners(AuditingEntityListener.class)
-@ToString(exclude = {"bookReviews", "bookReviewLikes"})
+@ToString(exclude = {"bookReviews", "bookReviewLikes", "pickedBooks"})
 @Table(name = "members") // 테이블 이름 매핑
 public class Member {
     @Id

@@ -16,7 +16,7 @@ public class PickedBookService {
         this.pickedBookRepository = pickedBookRepository;
     }
 
-    public void savePikedBook(Book book, Member member) {
+    public void savePickedBook(Book book, Member member) {
         PickedBook pickedBook = PickedBook.builder()
                 .book(book)
                 .member(member)
@@ -24,12 +24,12 @@ public class PickedBookService {
         pickedBookRepository.save(pickedBook);
     }
 
-    public void deletePikedBook(Book book, Member member) {
+    public void deletePickedBook(Book book, Member member) {
         PickedBook pickedBook = pickedBookRepository.findByBookAndMember(book, member).orElseThrow(()-> new EntityNotFoundException("Picked Book not found"));
         pickedBookRepository.delete(pickedBook);
     }
 
-    public Boolean existsPikedBook(Book book, Member member) {
+    public Boolean existsPickedBook(Book book, Member member) {
         return pickedBookRepository.existsByBookAndMember(book, member);
     }
 }
