@@ -1,6 +1,5 @@
 package com.capstone.bszip.Book.dto;
 
-import com.capstone.bszip.Book.repository.BooksnapPreviewDto;
 import lombok.Builder;
 import lombok.Getter;
 
