@@ -310,6 +310,39 @@ public class BookReviewController {
             [로그인 시] isLiked가 포함되어 로그인한 해당 회원이 좋아요를 눌렀는지 누르지 않았는지를 가져옵니다.
             [공통] last 값으로 헌재 페이지가 끝인지 확인 가능
             """)
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "로그인 후 결과입니다. 로그인 하지 않으면 isLiked는 안 옴", content = @Content(schema = @Schema(implementation = BookSearchResponse.class),
+            examples = {@ExampleObject(
+                    name = "Success example : 로그인 시",
+                    value = "{\n" +
+                            "  \"result\": true,\n" +
+                            "  \"status\": 200,\n" +
+                            "  \"message\": \"최신순 리뷰 \",\n" +
+                            "  \"data\": {\n" +
+                            "    \"booksnapPreview\": [\n" +
+                            "      {\n" +
+                            "        \"userName\": \"NerdyBook\",\n" +
+                            "        \"createdAt\": \"2025-02-24T10:27:54.146+00:00\",\n" +
+                            "        \"like\": \"0\",\n" +
+                            "        \"review\": \"자살 ㄴㄴ\",\n" +
+                            "        \"isLiked\": false,\n" +
+                            "        \"rating\": 4,\n" +
+                            "        \"bookInfo\": {\n" +
+                            "          \"isbn\": \"9788932912240\",\n" +
+                            "          \"title\": \"자살 클럽\",\n" +
+                            "          \"bookImageUrl\": \"https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F506787%3Ftimestamp%3D20231021152949\",\n" +
+                            "          \"authors\": [\n" +
+                            "            \"로버트 루이스 스티븐슨\"\n" +
+                            "          ],\n" +
+                            "          \"publisher\": \"열린책들\"\n" +
+                            "        }\n" +
+                            "      }\n" +
+                            "    ],\n" +
+                            "    \"totalPages\": 1,\n" +
+                            "    \"last\": true,\n" +
+                            "    \"totalElements\": 1\n" +
+                            "  }\n" +
+                            "}"
+            )})),})
     @GetMapping("/recent") // 현재 사용자가 좋아요 눌렀는지 안 눌렀는지도 추가하기
     public ResponseEntity<?> getRecentReviews(@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
                                               @AuthenticationPrincipal Member member) {
