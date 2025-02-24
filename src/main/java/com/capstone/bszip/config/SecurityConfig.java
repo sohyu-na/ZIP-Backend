@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -69,18 +70,20 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) //CSRF 비활성화
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(new JwtFilter(jwtUtil, authService,memberRepository ), ExceptionTranslationFilter.class)
+                .addFilterBefore(new JwtFilter(jwtUtil, authService,memberRepository ), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(SWAGGER_WHITELIST).permitAll() // Swagger UI 접근 허용
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/user/**").hasRole("USER")
                         .requestMatchers("/user/**").hasRole("USER")
-                        .requestMatchers("/**").permitAll()
+                        .requestMatchers("/**","/auth/**").permitAll()
                         .anyRequest().authenticated())
-                .formLogin(formLogin -> formLogin
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/", true)
-                        .failureUrl("/login?error=true"));//에러
+                .formLogin(formLogin -> formLogin.disable())
+                .httpBasic(httpBasic -> httpBasic.disable());
+                //.formLogin(formLogin -> formLogin
+                 //       .loginPage("/login")
+                 //       .defaultSuccessUrl("/", true)
+                 //       .failureUrl("/login?error=true"));//에러
 
         return http.build();
     }
