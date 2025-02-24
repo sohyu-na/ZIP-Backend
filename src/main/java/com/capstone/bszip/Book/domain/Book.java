@@ -14,7 +14,7 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 @Getter
-@ToString(exclude = {"bookReviews"})
+@ToString(exclude = {"bookReviews", "pickedBooks"})
 @Table(name="Books")
 public class Book {
     @Id
@@ -38,6 +38,9 @@ public class Book {
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookReview> bookReviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PickedBook> pickedBooks = new ArrayList<>();
 
     public Book(Long bookId, String bookName, String publisher, List<String> authors, String bookImageUrl, String content) {
         this.bookId = bookId;
