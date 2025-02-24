@@ -42,9 +42,9 @@ public class BookstoreController {
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @GetMapping("/search")
-    public ResponseEntity<?> searchBookstores(@RequestParam String keyword) {
+    public ResponseEntity<?> searchBookstores(@RequestParam String keyword, @AuthenticationPrincipal Member member) {
         try {
-            List<BookstoreResponse> bookstores = bookstoreService.searchBookstores(keyword);
+            List<BookstoreResponse> bookstores = bookstoreService.searchBookstores(keyword,member);
             if (bookstores.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("검색어에 해당하는 서점이 없습니다.");
@@ -70,9 +70,9 @@ public class BookstoreController {
     })
     @GetMapping
     public ResponseEntity<?> getBookstoresByCategory(
-            @Parameter(description = "조회할 서점 카테고리 (선택사항)") @RequestParam(required = false) BookstoreCategory category){
+            @Parameter(description = "조회할 서점 카테고리 (선택사항)") @RequestParam(required = false) BookstoreCategory category,@AuthenticationPrincipal Member member){
         try{
-            List<BookstoreResponse> bookstores = bookstoreService.getBookstoresByCategory(category);
+            List<BookstoreResponse> bookstores = bookstoreService.getBookstoresByCategory(category,member);
             return ResponseEntity.ok(bookstores);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -127,8 +127,7 @@ public class BookstoreController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("인증되지 않은 사용자입니다.");
             }
-            Long memberId = member.getMemberId();
-            List<BookstoreResponse> likedBookstores = bookstoreService.getLikedBookstores(memberId);
+            List<BookstoreResponse> likedBookstores = bookstoreService.getLikedBookstores(member);
             return ResponseEntity.ok(likedBookstores);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
