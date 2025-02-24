@@ -6,6 +6,7 @@ import com.capstone.bszip.Book.dto.*;
 import com.capstone.bszip.Book.repository.BookRepository;
 import com.capstone.bszip.Book.repository.BookReviewLikesRepository;
 import com.capstone.bszip.Book.repository.BookReviewRepository;
+import com.capstone.bszip.Book.repository.BooksnapPreviewDto;
 import com.capstone.bszip.Member.domain.Member;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,8 +24,10 @@ import org.springframework.web.client.*;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 @Slf4j
@@ -286,7 +289,7 @@ public class BookReviewService {
         return bookReviewRepository.existsById(bookReviewId);
     }
 
-    public Page<BookReviewResponse> getRecentReviews(Pageable pageable, Member member){
+    public Page<BooksnapPreviewDto> getRecentReviews(Pageable pageable, Member member){
         return bookReviewRepository.findBookReviewsByCreatedAtDesc(pageable)
                 .map(bookReview -> {
                     Boolean isLiked = null;
@@ -295,19 +298,22 @@ public class BookReviewService {
                     }
                     Book book = bookReview.getBook();
                     boolean isLikes = bookReviewLikesRepository.existsBookReviewLikesByBookReviewAndMember(bookReview, member);
-                    return BookReviewResponse.builder()
-                            .bookReviewId(bookReview.getBookReviewId()) // 리뷰 아이디
-                            .createdAt(bookReview.getCreatedAt()) // 생성시간
-                            .nickname(bookReview.getMember().getNickname()) // 작성자
-                            .authors(book.getAuthors()) // 작가
-                            .thumbnailUrl(book.getBookImageUrl()) // 이미지
-                            .title(book.getBookName()) // 책 제목
-                            .publisher(book.getPublisher()) // 출판사
-                            .isbn(book.getBookId().toString()) // isbn코드
-                            .rating(bookReview.getBookRating()) // 별점
-                            .reviewText(bookReview.getBookReviewText()) // 리뷰 내용
-                            .likesCount(bookReview.getBookReviewLikesList().size())// 좋아요 개수
+                    BookInfoDto bookInfoDto = BookInfoDto.builder()
+                            .isbn(book.getBookId().toString())
+                            .title(book.getBookName())
+                            .bookImageUrl(book.getBookImageUrl())
+                            .authors(book.getAuthors())
+                            .publisher(book.getPublisher())
+                            .build();
+
+                    return BooksnapPreviewDto.builder()
+                            .userName(bookReview.getMember().getNickname())
+                            .createdAt(Timestamp.valueOf( bookReview.getCreatedAt() ) )
+                            .like(Integer.toString(bookReview.getBookReviewLikesList().size()))
+                            .review(bookReview.getBookReviewText())
                             .isLiked(isLiked)
+                            .rating(bookReview.getBookRating())
+                            .bookInfo(bookInfoDto)
                             .build();
                         }
 
