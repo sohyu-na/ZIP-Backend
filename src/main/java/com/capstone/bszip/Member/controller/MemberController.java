@@ -74,7 +74,7 @@ public class MemberController {
         try {
             // 토큰에서 이메일 추출
             String email = JwtUtil.extractEmail(token);
-
+            System.out.println(email);
             // 닉네임과 이메일을 이용해 최종 회원가입
             memberService.registerMemberNickname(email, signupAddRequest.getNickname());
 
