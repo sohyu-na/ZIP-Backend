@@ -35,6 +35,13 @@ public class JwtFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain
     ) throws ServletException, IOException {
+        String path = request.getRequestURI();
+        // 로그인 관련 경로는 필터 적용 제외
+        if (path.startsWith("/auth")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         //헤더에서 jwt 추출
         String authHeader = request.getHeader("Authorization");
         String token = null;
