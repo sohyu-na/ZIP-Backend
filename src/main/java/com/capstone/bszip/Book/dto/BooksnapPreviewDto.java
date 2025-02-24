@@ -12,7 +12,7 @@ public class BooksnapPreviewDto {
     private Long bookReviewId;
     private String userName;
     private Date createdAt;
-    private String like;
+    private int like;
     private String review;
 
 
