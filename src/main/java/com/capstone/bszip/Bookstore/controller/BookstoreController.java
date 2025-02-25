@@ -22,7 +22,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -188,11 +190,16 @@ public class BookstoreController {
         }
         try{
             List<BookstoreResponse> likedBookstores = bookstoreService.getLikedBookstores(member);
-            return ResponseEntity.ok(SuccessResponse.<List<BookstoreResponse>>builder()
+
+            Map<String, Object> responseData = new HashMap<>();
+            responseData.put("totalCnt", likedBookstores.size());
+            responseData.put("bookstores", likedBookstores);
+
+            return ResponseEntity.ok(SuccessResponse.<Map<String, Object>>builder()
                     .result(true)
                     .status(HttpStatus.OK.value())
                     .message("찜한 서점 목록 조회 성공")
-                    .data(likedBookstores)
+                    .data(responseData)
                     .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
