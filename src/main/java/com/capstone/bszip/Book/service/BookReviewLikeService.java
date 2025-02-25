@@ -2,28 +2,19 @@ package com.capstone.bszip.Book.service;
 
 import com.capstone.bszip.Book.domain.BookReview;
 import com.capstone.bszip.Book.domain.BookReviewLikes;
-import com.capstone.bszip.Book.dto.BookReviewResponse;
 import com.capstone.bszip.Book.repository.BookReviewLikesRepository;
 import com.capstone.bszip.Book.repository.BookReviewRepository;
 import com.capstone.bszip.Member.domain.Member;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 @Service
 public class BookReviewLikeService {
-    private BookReviewLikesRepository bookReviewLikesRepository;
-    private BookReviewRepository bookReviewRepository;
+    private final BookReviewLikesRepository bookReviewLikesRepository;
+    private final BookReviewRepository bookReviewRepository;
     private final RedisTemplate<String, Object> redisTemplate;
 
     private static final String BOOK_REVIEW_LIKES_KEY = "book_review_likes:";
