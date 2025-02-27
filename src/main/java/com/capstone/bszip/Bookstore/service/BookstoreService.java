@@ -102,4 +102,20 @@ public class BookstoreService {
 
     }
 
+    @Transactional
+    public List<BookstoreResponse> getLikedBookstoresByCategory(Member member,BookstoreCategory category){
+        String memberKey = "member:liked:bookstores:" + member.getMemberId();
+        Set<String> bookstoreIds = redisTemplate.opsForSet().members(memberKey);
+
+        List<Long> longBookstoreIds = bookstoreIds.stream()
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
+        List <Bookstore> bookstores = bookstoreRepository.findAllById(longBookstoreIds);
+
+        return bookstores.stream()
+                .filter(bookstore -> bookstore.getBookstoreCategory()==category)
+                .map(Bookstore -> convertToBookstoreResponse(Bookstore,member))
+                .collect(Collectors.toList());
+
+    }
 }
