@@ -177,6 +177,7 @@ public class BookstoreController {
     })
     @GetMapping("/liked")
     public ResponseEntity<?> getLikedBookstores(
+            @RequestParam(required = false) BookstoreCategory category,
             @Parameter(hidden = true) @AuthenticationPrincipal Member member
     ) {
         if (member == null) {
@@ -189,8 +190,13 @@ public class BookstoreController {
                             .build());
         }
         try{
-            List<BookstoreResponse> likedBookstores = bookstoreService.getLikedBookstores(member);
-
+            List<BookstoreResponse> likedBookstores;
+            if(category == null){
+                likedBookstores = bookstoreService.getLikedBookstores(member);
+            }
+            else {
+                likedBookstores = bookstoreService.getLikedBookstoresByCategory(member, category);
+            }
             Map<String, Object> responseData = new HashMap<>();
             responseData.put("totalCnt", likedBookstores.size());
             responseData.put("bookstores", likedBookstores);
