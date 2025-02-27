@@ -372,6 +372,12 @@ public class BookReviewController {
     }
 
     @GetMapping("/like-top")
+    @Operation(summary = "좋아요 순 리뷰 보여주기", description = """
+            **page와 size만** 입력하세요! sort는 없애고 확인해주세요🥲
+            결과는 최신순과 동일하나 좋아요가 0인 리뷰는 반환하지 않습니다.
+            [로그인 시] isLiked가 포함되어 로그인한 해당 회원이 좋아요를 눌렀는지 누르지 않았는지를 가져옵니다.
+            [공통] last 값으로 헌재 페이지가 끝인지 확인 가능
+            """)
     public ResponseEntity<?> getLikeTopReview(@AuthenticationPrincipal Member member, Pageable pageable) {
         try{
             Page<BooksnapPreviewDto> bookReviews = bookReviewService.getLikeTopReviews(pageable, member);
