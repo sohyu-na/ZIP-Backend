@@ -370,4 +370,36 @@ public class BookReviewController {
             throw new RuntimeException(e);
         }
     }
+
+    @GetMapping("/like-top")
+    public ResponseEntity<?> getLikeTopReview(@AuthenticationPrincipal Member member, Pageable pageable) {
+        try{
+            Page<BooksnapPreviewDto> bookReviews = bookReviewService.getLikeTopReviews(pageable, member);
+            BooksnapPreviewResponse booksnapPreviewResponse = BooksnapPreviewResponse.builder()
+                    .booksnapPreview(bookReviews.getContent())
+                    .last(bookReviews.isLast())
+                    .totalPages(bookReviews.getTotalPages())
+                    .totalElements(bookReviews.getTotalElements())
+                    .build();
+            return ResponseEntity.ok(
+                    SuccessResponse.builder()
+                            .result(true)
+                            .status(HttpServletResponse.SC_OK)
+                            .message("좋아요순 리뷰 🥐")
+                            .data(booksnapPreviewResponse)
+                            .build()
+            );
+        }catch (NullPointerException e){
+            return ResponseEntity.status(400).body(
+                    ErrorResponse.builder()
+                            .result(false)
+                            .status(400)
+                            .message("입력이 잘 못된 값 존재")
+                            .build()
+            );
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

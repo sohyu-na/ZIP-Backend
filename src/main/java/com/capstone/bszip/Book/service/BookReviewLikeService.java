@@ -11,6 +11,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
+
 @Service
 public class BookReviewLikeService {
     private final BookReviewLikesRepository bookReviewLikesRepository;
@@ -30,6 +32,10 @@ public class BookReviewLikeService {
     public void saveLike(BookReviewLikes bookReviewLikes) {
         try{
             bookReviewLikesRepository.save(bookReviewLikes);
+            double timestampWeight = bookReviewLikes.getBookReview().getCreatedAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 1_000_000_000.0;
+            redisTemplate.opsForZSet().incrementScore(BOOK_REVIEW_LIKES_KEY,
+                    bookReviewLikes.getId().toString(),
+                    1 + timestampWeight);
         }catch (DataIntegrityViolationException e){
             throw new DataIntegrityViolationException("무결성 제약 조건 위반: ", e);
         } catch (Exception e){
@@ -50,10 +56,26 @@ public class BookReviewLikeService {
     public void deleteLike(BookReviewLikes bookReviewLikes) {
         try{
             bookReviewLikesRepository.delete(bookReviewLikes);
+            double timestampWeight = bookReviewLikes.getBookReview().getCreatedAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 1_000_000_000.0;
+            redisTemplate.opsForZSet().incrementScore(BOOK_REVIEW_LIKES_KEY, bookReviewLikes.getId().toString(), -1 - timestampWeight);
         }catch (Exception e){
             throw new RuntimeException(e);
         }
 
     }
+
+    public int getLikeCount(Long reviewId) {
+        Double score = redisTemplate.opsForZSet().score(BOOK_REVIEW_LIKES_KEY, reviewId.toString());
+        System.out.println("score: " + score);
+        if (score != null) {
+            return score.intValue();
+        }
+
+        int likeCount = bookReviewLikesRepository.countByBookReview_BookReviewId(reviewId);
+        redisTemplate.opsForZSet().add(BOOK_REVIEW_LIKES_KEY, reviewId.toString(), likeCount);
+
+        return likeCount;
+    }
+
 
 }

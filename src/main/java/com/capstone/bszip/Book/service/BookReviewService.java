@@ -14,7 +14,10 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -25,8 +28,9 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -36,16 +40,19 @@ public class BookReviewService {
     private final BookReviewRepository bookReviewRepository;
     private final ObjectMapper objectMapper;
     private final BookReviewLikeService bookReviewLikeService;
+    private final RedisTemplate<String, Object> redisTemplate;
     private final BookReviewLikesRepository bookReviewLikesRepository;
     @Value("${kakao.client.id}")
     private String kakaoApiKey;
+    private static final String BOOK_REVIEW_LIKES_KEY = "book_review_likes:";
 
-    public BookReviewService(BookRepository bookRepository, ObjectMapper objectMapper, BookReviewRepository bookReviewRepository, BookReviewLikeService bookReviewLikeService, BookReviewLikesRepository bookReviewLikesRepository) {
+    public BookReviewService(BookRepository bookRepository, ObjectMapper objectMapper, BookReviewRepository bookReviewRepository, BookReviewLikeService bookReviewLikeService, BookReviewLikesRepository bookReviewLikesRepository, RedisTemplate<String, Object> redisTemplate) {
         this.bookRepository = bookRepository;
         this.objectMapper = objectMapper;
         this.bookReviewRepository = bookReviewRepository;
         this.bookReviewLikeService = bookReviewLikeService;
         this.bookReviewLikesRepository = bookReviewLikesRepository;
+        this.redisTemplate = redisTemplate;
     }
 
     // kakao book api에서 책 제목로 검색된 책 정보 json 가져오기 -> 책제목 검색이랑 작가 검색이랑 너무 공통되는 부분이 많아서 걍 통일시켜야 될 거 같으다...
@@ -309,7 +316,7 @@ public class BookReviewService {
                             .bookReviewId(bookReview.getBookReviewId())
                             .userName(bookReview.getMember().getNickname())
                             .createdAt(Timestamp.valueOf( bookReview.getCreatedAt() ) )
-                            .like(bookReview.getBookReviewLikesList().size())
+                            .like(bookReviewLikeService.getLikeCount(bookReview.getBookReviewId()))
                             .review(bookReview.getBookReviewText())
                             .isLiked(isLiked)
                             .rating(bookReview.getBookRating())
@@ -318,6 +325,67 @@ public class BookReviewService {
                         }
 
                 );
+    }
+
+    public Page<BooksnapPreviewDto> getLikeTopReviews(Pageable pageable, Member member){
+        long start = (long) pageable.getPageNumber() * pageable.getPageSize();
+        long end = start + pageable.getPageSize() - 1;
+
+        // Redis에서 좋아요 개수가 많은 리뷰 ID 목록 가져오기
+        List<Long> topReviewIds = redisTemplate.opsForZSet()
+                .reverseRange(BOOK_REVIEW_LIKES_KEY, start, end)
+                .stream()
+                .map(obj -> Long.valueOf(obj.toString()))
+                .toList();
+
+        if (topReviewIds.isEmpty()) {
+            return Page.empty();
+        }
+
+        // DB에서 해당 리뷰 ID에 해당하는 리뷰 조회
+        List<BookReview> reviews = bookReviewRepository.findBookReviewByBookReviewIdIn(topReviewIds);
+
+        // 원래 정렬 유지 (Redis에서 가져온 순서대로)
+        Map<Long, BookReview> reviewMap = reviews.stream()
+                .collect(Collectors.toMap(BookReview::getBookReviewId, Function.identity()));
+
+        List<BookReview> sortedReviews = topReviewIds.stream()
+                .map(reviewMap::get)
+                .filter(Objects::nonNull)
+                .toList();
+
+        // BookReview -> BooksnapPreviewDto 변환
+        List<BooksnapPreviewDto> reviewDtos = sortedReviews.stream()
+                .map(bookReview -> {
+                    Boolean isLiked = null;
+                    if (member != null) {
+                        isLiked = bookReviewLikesRepository.existsBookReviewLikesByBookReviewAndMember(bookReview, member);
+                    }
+                    Book book = bookReview.getBook();
+                    BookInfoDto bookInfoDto = BookInfoDto.builder()
+                            .isbn(book.getBookId().toString())
+                            .title(book.getBookName())
+                            .bookImageUrl(book.getBookImageUrl())
+                            .authors(book.getAuthors())
+                            .publisher(book.getPublisher())
+                            .build();
+
+                    return BooksnapPreviewDto.builder()
+                            .bookReviewId(bookReview.getBookReviewId())
+                            .userName(bookReview.getMember().getNickname())
+                            .createdAt(Timestamp.valueOf(bookReview.getCreatedAt()))
+                            .like(bookReviewLikeService.getLikeCount(bookReview.getBookReviewId()))
+                            .review(bookReview.getBookReviewText())
+                            .isLiked(isLiked)
+                            .rating(bookReview.getBookRating())
+                            .bookInfo(bookInfoDto)
+                            .build();
+                })
+                .toList();
+
+        // 최종적으로 Page 객체로 변환하여 반환
+        return new PageImpl<>(reviewDtos, pageable, redisTemplate.opsForZSet().size(BOOK_REVIEW_LIKES_KEY));
+
     }
 
 }
