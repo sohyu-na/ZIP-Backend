@@ -32,9 +32,13 @@ public class BookReviewLikeService {
     public void saveLike(BookReviewLikes bookReviewLikes) {
         try{
             bookReviewLikesRepository.save(bookReviewLikes);
-            double timestampWeight = bookReviewLikes.getBookReview().getCreatedAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 1_000_000_000.0;
+            BookReview bookReview = bookReviewLikes.getBookReview();
+            double timestampWeight = bookReview.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 1_000_000_000_000_0.0;
+            System.out.println("time: "+timestampWeight);
+
+
             redisTemplate.opsForZSet().incrementScore(BOOK_REVIEW_LIKES_KEY,
-                    bookReviewLikes.getId().toString(),
+                    bookReview.getBookReviewId().toString(),
                     1 + timestampWeight);
         }catch (DataIntegrityViolationException e){
             throw new DataIntegrityViolationException("무결성 제약 조건 위반: ", e);
@@ -56,8 +60,11 @@ public class BookReviewLikeService {
     public void deleteLike(BookReviewLikes bookReviewLikes) {
         try{
             bookReviewLikesRepository.delete(bookReviewLikes);
-            double timestampWeight = bookReviewLikes.getBookReview().getCreatedAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 1_000_000_000.0;
-            redisTemplate.opsForZSet().incrementScore(BOOK_REVIEW_LIKES_KEY, bookReviewLikes.getId().toString(), -1 - timestampWeight);
+            BookReview bookReview = bookReviewLikes.getBookReview();
+            double timestampWeight = bookReview.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 1_000_000_000_000_0.0;
+            System.out.println("t : " + timestampWeight);
+            System.out.println("b ig: "+ bookReviewLikes.getId());
+            redisTemplate.opsForZSet().incrementScore(BOOK_REVIEW_LIKES_KEY, bookReview.getBookReviewId().toString(), -1 - timestampWeight);
         }catch (Exception e){
             throw new RuntimeException(e);
         }
