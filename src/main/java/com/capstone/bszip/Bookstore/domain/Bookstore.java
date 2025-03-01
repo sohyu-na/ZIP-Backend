@@ -1,10 +1,12 @@
 package com.capstone.bszip.Bookstore.domain;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 
 @Entity
 @Data
+@Builder(toBuilder = true) // toBuilder = true 옵션 추가
 @Table(name="bookstores")
 public class Bookstore {
     @Id
@@ -28,10 +30,20 @@ public class Bookstore {
     @Column(name = "address", nullable = false)
     private String address;
 
+    @Column(name = "latitude", nullable = false)
+    private double latitude;
+
+    @Column(name = "longitude", nullable = false)
+    private double longitude;
+
     @Column(name = "description")
     private String description;
 
     @Column(name="rating")
     private Double rating;
 
+    // 별점만 변경하는 메서드
+    public Bookstore updateRating(double newRating) {
+        return this.toBuilder().rating(newRating).build();
+    }
 }

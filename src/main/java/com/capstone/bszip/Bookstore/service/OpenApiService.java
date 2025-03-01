@@ -43,14 +43,15 @@ public class OpenApiService {
         List<Map<String, Object>> dataList = extractDataListFromResponse(responseCafe);
 
         for (Map<String, Object> item : dataList) {
-            Bookstore bookstore = new Bookstore();
-            bookstore.setName((String) item.get("TITLE"));
-            bookstore.setBookstoreCategory(CAFE);
-            bookstore.setPhone((String) item.get("CONTACT_POINT"));
-            bookstore.setHours((String) item.get("DESCRIPTION"));
-            bookstore.setAddress((String) item.get("ADDRESS"));
-            bookstore.setDescription((String) item.get("SUB_DESCRIPTION"));
-            bookstore.setRating(0.0);//초기화
+            Bookstore bookstore = Bookstore.builder()
+                    .name((String) item.get("TITLE"))
+                    .bookstoreCategory(CAFE)
+                    .phone((String) item.get("CONTACT_POINT"))
+                    .hours((String) item.get("DESCRIPTION"))
+                    .address((String) item.get("ADDRESS"))
+                    .description((String) item.get("SUB_DESCRIPTION"))
+                    .rating(0.0)
+                    .build();
             bookstoreRepository.save(bookstore);
         }
     }
@@ -68,14 +69,15 @@ public class OpenApiService {
         List<Map<String, Object>> dataList = extractDataListFromResponse(responseIndep);
 
         for (Map<String, Object> item : dataList) {
-            Bookstore bookstore = new Bookstore();
-            bookstore.setName((String) item.get("TITLE"));
-            bookstore.setBookstoreCategory(INDEP);
-            bookstore.setPhone((String) item.get("CONTACT_POINT"));
-            bookstore.setHours((String) item.get("DESCRIPTION"));
-            bookstore.setAddress((String) item.get("ADDRESS"));
-            bookstore.setDescription((String) item.get("SUB_DESCRIPTION"));
-            bookstore.setRating(0.0);//초기화
+            Bookstore bookstore = Bookstore.builder()
+                    .name((String) item.get("TITLE"))
+                    .bookstoreCategory(INDEP)
+                    .phone((String) item.get("CONTACT_POINT"))
+                    .hours((String) item.get("DESCRIPTION"))
+                    .address((String) item.get("ADDRESS"))
+                    .description((String) item.get("SUB_DESCRIPTION"))
+                    .rating(0.0)
+                    .build();
             bookstoreRepository.save(bookstore);
         }
     }
@@ -92,16 +94,17 @@ public class OpenApiService {
         List<Map<String, Object>> dataList = extractDataListFromResponse(responseChild);
 
         for (Map<String, Object> item : dataList) {
-            Bookstore bookstore = new Bookstore();
-            bookstore.setName((String) item.get("FCLTY_NM"));
-            bookstore.setBookstoreCategory(CHILD);
-            bookstore.setPhone("0" + (String) item.get("TEL_NO"));
-            bookstore.setHours("평일개점마감시간" + convertDecimalToTime(item.get("WORKDAY_OPN_BSNS_TIME")) + "~" + convertDecimalToTime(item.get("WORKDAY_CLOS_TIME"))
-                    + "토요일개점마감시간" + convertDecimalToTime(item.get("SAT_OPN_BSNS_TIME")) + "~" + convertDecimalToTime(item.get("SAT_CLOS_TIME"))
-                    + "일요일개점마감시간" + convertDecimalToTime(item.get("SUN_OPN_BSNS_TIME")) + "~" + convertDecimalToTime(item.get("SUN_CLOS_TIME")));
-            bookstore.setAddress((String) item.get("FCLTY_ROAD_NM_ADDR"));
-            bookstore.setDescription((String) item.get("ADIT_DC"));
-            bookstore.setRating(0.0);//초기화
+            Bookstore bookstore = Bookstore.builder()
+                    .name((String) item.get("FCLTY_NM"))
+                    .bookstoreCategory(CHILD)
+                    .phone("0" + (String) item.get("TEL_NO"))
+                    .hours("평일개점마감시간" + convertDecimalToTime(item.get("WORKDAY_OPN_BSNS_TIME")) + "~" + convertDecimalToTime(item.get("WORKDAY_CLOS_TIME"))
+                            + "토요일개점마감시간" + convertDecimalToTime(item.get("SAT_OPN_BSNS_TIME")) + "~" + convertDecimalToTime(item.get("SAT_CLOS_TIME"))
+                            + "일요일개점마감시간" + convertDecimalToTime(item.get("SUN_OPN_BSNS_TIME")) + "~" + convertDecimalToTime(item.get("SUN_CLOS_TIME")))
+                    .address((String) item.get("FCLTY_ROAD_NM_ADDR"))
+                    .description((String) item.get("ADIT_DC"))
+                    .rating(0.0)
+                    .build();
             bookstoreRepository.save(bookstore);
         }
     }
