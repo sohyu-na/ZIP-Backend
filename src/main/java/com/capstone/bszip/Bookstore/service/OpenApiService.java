@@ -40,10 +40,7 @@ public class OpenApiService {
                 .toString();
         Map<String, Object> responseCafe = restTemplate.getForObject(urlCafe, Map.class);
         System.out.println(responseCafe);
-        Map<String, Object> responseData = (Map<String, Object>) responseCafe.get("response");
-        Map<String, Object> body = (Map<String, Object>) responseData.get("body");
-        Map<String, Object> items = (Map<String, Object>) body.get("items");
-        List<Map<String, Object>> dataList = (List<Map<String, Object>>) items.get("item");
+        List<Map<String, Object>> dataList = extractDataListFromResponse(responseCafe);
 
         for (Map<String, Object> item : dataList) {
             Bookstore bookstore = new Bookstore();
@@ -68,10 +65,7 @@ public class OpenApiService {
                 .toString();
         Map<String, Object> responseIndep = restTemplate.getForObject(urlIndep, Map.class);
         System.out.println(responseIndep);
-        Map<String, Object> responseData = (Map<String, Object>) responseIndep.get("response");
-        Map<String, Object> body = (Map<String, Object>) responseData.get("body");
-        Map<String, Object> items = (Map<String, Object>) body.get("items");
-        List<Map<String, Object>> dataList = (List<Map<String, Object>>) items.get("item");
+        List<Map<String, Object>> dataList = extractDataListFromResponse(responseIndep);
 
         for (Map<String, Object> item : dataList) {
             Bookstore bookstore = new Bookstore();
@@ -95,10 +89,7 @@ public class OpenApiService {
                 .toString();
         Map<String, Object> responseChild = restTemplate.getForObject(urlChild, Map.class);
         System.out.println(responseChild);
-        Map<String, Object> responseData = (Map<String, Object>) responseChild.get("response");
-        Map<String, Object> body = (Map<String, Object>) responseData.get("body");
-        Map<String, Object> items = (Map<String, Object>) body.get("items");
-        List<Map<String, Object>> dataList = (List<Map<String, Object>>) items.get("item");
+        List<Map<String, Object>> dataList = extractDataListFromResponse(responseChild);
 
         for (Map<String, Object> item : dataList) {
             Bookstore bookstore = new Bookstore();
@@ -121,5 +112,11 @@ public class OpenApiService {
         int hours = totalMinutes / 60;
         int minutes = totalMinutes % 60;
         return String.format("%02d:%02d", hours, minutes);
+    }
+    private List<Map<String, Object>> extractDataListFromResponse(Map<String, Object> response) {
+        Map<String, Object> responseData = (Map<String, Object>) response.get("response");
+        Map<String, Object> body = (Map<String, Object>) responseData.get("body");
+        Map<String, Object> items = (Map<String, Object>) body.get("items");
+        return (List<Map<String, Object>>) items.get("item");
     }
 }
