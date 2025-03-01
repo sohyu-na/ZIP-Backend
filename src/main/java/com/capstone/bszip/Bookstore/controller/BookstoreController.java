@@ -47,9 +47,11 @@ public class BookstoreController {
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @GetMapping("/search")
-    public ResponseEntity<?> searchBookstores(@RequestParam String keyword, @AuthenticationPrincipal Member member) {
+    public ResponseEntity<?> searchBookstores(@RequestParam String keyword,
+                                              @AuthenticationPrincipal Member member,
+                                              @RequestParam double lat, @RequestParam double lng) {
         try {
-            List<BookstoreResponse> bookstores = bookstoreService.searchBookstores(keyword,member);
+            List<BookstoreResponse> bookstores = bookstoreService.searchBookstores(keyword,member,lat,lng);
             if (bookstores.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ErrorResponse.builder()
@@ -90,20 +92,32 @@ public class BookstoreController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "성공적으로 서점 목록을 반환"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "500", description = "서버 오류 발생",
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @GetMapping
     public ResponseEntity<?> getBookstoresByCategory(
-            @Parameter(description = "조회할 서점 카테고리 (선택사항)") @RequestParam(required = false) BookstoreCategory category,@AuthenticationPrincipal Member member){
+            @Parameter(description = "조회할 서점 카테고리") @RequestParam(required = false) BookstoreCategory category,
+            @AuthenticationPrincipal Member member,
+            @RequestParam double lat, @RequestParam double lng){
         try{
-            List<BookstoreResponse> bookstores = bookstoreService.getBookstoresByCategory(category,member);
+            List<BookstoreResponse> bookstores = bookstoreService.getBookstoresByCategory(category,member,lat,lng);
             return ResponseEntity.ok(SuccessResponse.<List<BookstoreResponse>>builder()
                     .result(true)
                     .status(HttpStatus.OK.value())
                     .message("카테고리별 서점 조회 성공")
                     .data(bookstores)
                     .build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ErrorResponse.builder()
+                            .result(false)
+                            .status(HttpStatus.BAD_REQUEST.value())
+                            .message("잘못된 요청입니다.")
+                            .detail(e.getMessage())
+                            .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ErrorResponse.builder()
@@ -178,7 +192,8 @@ public class BookstoreController {
     @GetMapping("/liked")
     public ResponseEntity<?> getLikedBookstores(
             @RequestParam(required = false) BookstoreCategory category,
-            @Parameter(hidden = true) @AuthenticationPrincipal Member member
+            @Parameter(hidden = true) @AuthenticationPrincipal Member member,
+            @RequestParam double lat, @RequestParam double lng
     ) {
         if (member == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -191,12 +206,8 @@ public class BookstoreController {
         }
         try{
             List<BookstoreResponse> likedBookstores;
-            if(category == null){
-                likedBookstores = bookstoreService.getLikedBookstores(member);
-            }
-            else {
-                likedBookstores = bookstoreService.getLikedBookstoresByCategory(member, category);
-            }
+            likedBookstores = bookstoreService.getLikedBookstoresByCategory(member, category,lat,lng);
+
             Map<String, Object> responseData = new HashMap<>();
             responseData.put("totalCnt", likedBookstores.size());
             responseData.put("bookstores", likedBookstores);

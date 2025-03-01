@@ -1,13 +1,17 @@
 package com.capstone.bszip.Bookstore.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @Builder(toBuilder = true) // toBuilder = true 옵션 추가
 @Table(name="bookstores")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Bookstore {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
