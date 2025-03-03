@@ -20,7 +20,7 @@ public class BookReviewLikeService {
     private final RedisTemplate<String, Object> redisTemplate;
 
     private static final String BOOK_REVIEW_LIKES_KEY = "book_review_likes:";
-    private static final String BOOK_REVIEW_LIKES_ZEST = "book_review_likesZSet";
+    private static final String LAST7DAYS_BOOK_REVIEW_LIKES_KEY = "last7days_book_review_likes:";
 
     public BookReviewLikeService(BookReviewLikesRepository bookReviewLikesRepository, BookReviewRepository bookReviewRepository, RedisTemplate<String, Object> redisTemplate) {
         this.bookReviewLikesRepository = bookReviewLikesRepository;
@@ -38,6 +38,9 @@ public class BookReviewLikeService {
 
 
             redisTemplate.opsForZSet().incrementScore(BOOK_REVIEW_LIKES_KEY,
+                    bookReview.getBookReviewId().toString(),
+                    1 + timestampWeight);
+            redisTemplate.opsForZSet().incrementScore(LAST7DAYS_BOOK_REVIEW_LIKES_KEY,
                     bookReview.getBookReviewId().toString(),
                     1 + timestampWeight);
         }catch (DataIntegrityViolationException e){
@@ -62,9 +65,10 @@ public class BookReviewLikeService {
             bookReviewLikesRepository.delete(bookReviewLikes);
             BookReview bookReview = bookReviewLikes.getBookReview();
             double timestampWeight = bookReview.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 1_000_000_000_000_0.0;
-            System.out.println("t : " + timestampWeight);
-            System.out.println("b ig: "+ bookReviewLikes.getId());
             redisTemplate.opsForZSet().incrementScore(BOOK_REVIEW_LIKES_KEY, bookReview.getBookReviewId().toString(), -1 - timestampWeight);
+            redisTemplate.opsForZSet().incrementScore(LAST7DAYS_BOOK_REVIEW_LIKES_KEY,
+                    bookReview.getBookReviewId().toString(),
+                    1 + timestampWeight);
         }catch (Exception e){
             throw new RuntimeException(e);
         }
@@ -73,7 +77,6 @@ public class BookReviewLikeService {
 
     public int getLikeCount(Long reviewId) {
         Double score = redisTemplate.opsForZSet().score(BOOK_REVIEW_LIKES_KEY, reviewId.toString());
-        System.out.println("score: " + score);
         if (score != null) {
             return score.intValue();
         }
