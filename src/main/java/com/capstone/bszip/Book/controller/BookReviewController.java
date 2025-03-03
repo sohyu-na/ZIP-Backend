@@ -16,7 +16,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -340,16 +339,15 @@ public class BookReviewController {
                             "}"
             )})),})
     @GetMapping("/reviews")
-    public ResponseEntity<?> getRecentReviews(@RequestParam(required = false) String srt,
-            @PageableDefault(size = 10,sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+    public ResponseEntity<?> getRecentReviews(@RequestParam(required = true) ReviewSort sort,
+                                              @PageableDefault(size = 10,sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
                                               @AuthenticationPrincipal Member member) {
         try{
-            System.out.println(srt);
             Page<BooksnapPreviewDto> bookReviews = null;
-            if(srt.equals("recent")){
+            if(sort.equals(ReviewSort.createdAt)){
                 bookReviews = bookReviewService.getRecentReviews(pageable, member);
-            } else if(srt.equals("like-top") || srt.equals("trend")){
-                bookReviews = bookReviewService.getLikeTopReviews(pageable, member, srt);
+            } else if(sort.equals(ReviewSort.liketop) || sort.equals(ReviewSort.trend)){
+                bookReviews = bookReviewService.getLikeTopReviews(pageable, member, sort);
             }
 
             BooksnapPreviewResponse booksnapPreviewResponse = BooksnapPreviewResponse.builder()
@@ -362,7 +360,7 @@ public class BookReviewController {
                     SuccessResponse.builder()
                             .result(true)
                             .status(HttpServletResponse.SC_OK)
-                            .message(srt + " 기준 리뷰 🥐")
+                            .message(sort + " 기준 리뷰 🥐")
                             .data(booksnapPreviewResponse)
                             .build()
             );

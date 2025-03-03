@@ -327,13 +327,13 @@ public class BookReviewService {
                 );
     }
 
-    public Page<BooksnapPreviewDto> getLikeTopReviews(Pageable pageable, Member member, String sort){
+    public Page<BooksnapPreviewDto> getLikeTopReviews(Pageable pageable, Member member, ReviewSort sort){
         long start = (long) pageable.getPageNumber() * pageable.getPageSize();
         long end = start + pageable.getPageSize() - 1;
         String key = null;
-        if(sort.equals("like-top")){
+        if(sort.equals(ReviewSort.liketop)){
             key = BOOK_REVIEW_LIKES_KEY;
-        } else if (sort.equals("trend")) {
+        } else if (sort.equals(ReviewSort.trend)) {
             key = LAST7DAYS_BOOK_REVIEW_LIKES_KEY;
         }
         // Redis에서 좋아요 개수가 많은 리뷰 ID 목록 가져오기
