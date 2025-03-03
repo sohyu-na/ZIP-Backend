@@ -17,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -45,6 +44,7 @@ public class BookReviewService {
     @Value("${kakao.client.id}")
     private String kakaoApiKey;
     private static final String BOOK_REVIEW_LIKES_KEY = "book_review_likes:";
+    private static final String LAST7DAYS_BOOK_REVIEW_LIKES_KEY = "last7days_book_review_likes:";
 
     public BookReviewService(BookRepository bookRepository, ObjectMapper objectMapper, BookReviewRepository bookReviewRepository, BookReviewLikeService bookReviewLikeService, BookReviewLikesRepository bookReviewLikesRepository, RedisTemplate<String, Object> redisTemplate) {
         this.bookRepository = bookRepository;
@@ -327,13 +327,18 @@ public class BookReviewService {
                 );
     }
 
-    public Page<BooksnapPreviewDto> getLikeTopReviews(Pageable pageable, Member member){
+    public Page<BooksnapPreviewDto> getLikeTopReviews(Pageable pageable, Member member, String sort){
         long start = (long) pageable.getPageNumber() * pageable.getPageSize();
         long end = start + pageable.getPageSize() - 1;
-
+        String key = null;
+        if(sort.equals("like-top")){
+            key = BOOK_REVIEW_LIKES_KEY;
+        } else if (sort.equals("trend")) {
+            key = LAST7DAYS_BOOK_REVIEW_LIKES_KEY;
+        }
         // Redis에서 좋아요 개수가 많은 리뷰 ID 목록 가져오기
         List<Long> topReviewIds = redisTemplate.opsForZSet()
-                .reverseRange(BOOK_REVIEW_LIKES_KEY, start, end)
+                .reverseRange(Objects.requireNonNull(key), start, end)
                 .stream()
                 .map(obj -> Long.valueOf(obj.toString()))
                 .toList();

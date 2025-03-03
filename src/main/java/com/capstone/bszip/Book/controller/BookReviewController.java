@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -300,7 +301,7 @@ public class BookReviewController {
     * 리뷰 보이기 api
     * - 최신순, 좋아요, 요즘 인기 있는
    */
-    @Operation(summary = "최신순 리뷰 보여주기", description = """
+    @Operation(summary = "리뷰 보여주기", description = """
             **page와 size만** 입력하세요! sort는 없애고 확인해주세요🥲
             [로그인 시] isLiked가 포함되어 로그인한 해당 회원이 좋아요를 눌렀는지 누르지 않았는지를 가져옵니다.
             [공통] last 값으로 헌재 페이지가 끝인지 확인 가능
@@ -338,11 +339,19 @@ public class BookReviewController {
                             "  }\n" +
                             "}"
             )})),})
-    @GetMapping("/recent") // 현재 사용자가 좋아요 눌렀는지 안 눌렀는지도 추가하기
-    public ResponseEntity<?> getRecentReviews(@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+    @GetMapping("/reviews")
+    public ResponseEntity<?> getRecentReviews(@RequestParam(required = false) String srt,
+            @PageableDefault(size = 10,sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
                                               @AuthenticationPrincipal Member member) {
         try{
-            Page<BooksnapPreviewDto> bookReviews = bookReviewService.getRecentReviews(pageable, member);
+            System.out.println(srt);
+            Page<BooksnapPreviewDto> bookReviews = null;
+            if(srt.equals("recent")){
+                bookReviews = bookReviewService.getRecentReviews(pageable, member);
+            } else if(srt.equals("like-top") || srt.equals("trend")){
+                bookReviews = bookReviewService.getLikeTopReviews(pageable, member, srt);
+            }
+
             BooksnapPreviewResponse booksnapPreviewResponse = BooksnapPreviewResponse.builder()
                     .booksnapPreview(bookReviews.getContent())
                     .last(bookReviews.isLast())
@@ -353,7 +362,7 @@ public class BookReviewController {
                     SuccessResponse.builder()
                             .result(true)
                             .status(HttpServletResponse.SC_OK)
-                            .message("최신순 리뷰 🥐")
+                            .message(srt + " 기준 리뷰 🥐")
                             .data(booksnapPreviewResponse)
                             .build()
             );
@@ -371,41 +380,5 @@ public class BookReviewController {
         }
     }
 
-    @GetMapping("/like-top")
-    @Operation(summary = "좋아요 순 리뷰 보여주기", description = """
-            **page와 size만** 입력하세요! sort는 없애고 확인해주세요🥲
-            결과는 최신순과 동일하나 좋아요가 0인 리뷰는 반환하지 않습니다.
-            [로그인 시] isLiked가 포함되어 로그인한 해당 회원이 좋아요를 눌렀는지 누르지 않았는지를 가져옵니다.
-            [공통] last 값으로 헌재 페이지가 끝인지 확인 가능
-            """)
-    public ResponseEntity<?> getLikeTopReview(@AuthenticationPrincipal Member member, Pageable pageable) {
-        try{
-            Page<BooksnapPreviewDto> bookReviews = bookReviewService.getLikeTopReviews(pageable, member);
-            BooksnapPreviewResponse booksnapPreviewResponse = BooksnapPreviewResponse.builder()
-                    .booksnapPreview(bookReviews.getContent())
-                    .last(bookReviews.isLast())
-                    .totalPages(bookReviews.getTotalPages())
-                    .totalElements(bookReviews.getTotalElements())
-                    .build();
-            return ResponseEntity.ok(
-                    SuccessResponse.builder()
-                            .result(true)
-                            .status(HttpServletResponse.SC_OK)
-                            .message("좋아요순 리뷰 🥐")
-                            .data(booksnapPreviewResponse)
-                            .build()
-            );
-        }catch (NullPointerException e){
-            return ResponseEntity.status(400).body(
-                    ErrorResponse.builder()
-                            .result(false)
-                            .status(400)
-                            .message("입력이 잘 못된 값 존재")
-                            .build()
-            );
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 }
