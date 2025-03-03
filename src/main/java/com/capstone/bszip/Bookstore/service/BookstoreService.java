@@ -23,8 +23,8 @@ public class BookstoreService {
     private final RedisTemplate<String,String> redisTemplate;
 
     @Transactional
-    public List<BookstoreResponse> searchBookstores(String keyword, Member member) {
-        List<Bookstore> bookstores = bookstoreRepository.findByNameContainingIgnoreCaseOrAddressContainingIgnoreCase(keyword, keyword);
+    public List<BookstoreResponse> searchBookstores(String keyword, Member member,double lat, double lng) {
+        List<Bookstore> bookstores = bookstoreRepository.findByNameOrAddressOrderByDistance(keyword, keyword,lat,lng);
 
         return bookstores.stream()
                 .map(Bookstore -> convertToBookstoreResponse(Bookstore, member))
@@ -32,14 +32,14 @@ public class BookstoreService {
     }
 
     @Transactional
-    public List<BookstoreResponse> getBookstoresByCategory(BookstoreCategory category, Member member){
+    public List<BookstoreResponse> getBookstoresByCategory(BookstoreCategory category, Member member,double lat, double lng){
         if(category == null){
-            List <Bookstore> bookstores = bookstoreRepository.findAll();
+            List <Bookstore> bookstores = bookstoreRepository.findAllOrderByDistance(lat,lng);
             return bookstores.stream()
                     .map(Bookstore -> convertToBookstoreResponse(Bookstore,member))
                     .collect(Collectors.toList());
         }
-        List <Bookstore> bookstores =bookstoreRepository.findByBookstoreCategory(category);
+        List <Bookstore> bookstores =bookstoreRepository.findByBookstoreCategoryByDistance(category,lat,lng);
         return bookstores.stream()
                 .map(Bookstore -> convertToBookstoreResponse(Bookstore,member))
                 .collect(Collectors.toList());
@@ -85,37 +85,24 @@ public class BookstoreService {
         }
 
     }
-
     @Transactional
-    public List<BookstoreResponse> getLikedBookstores(Member member){
+    public List<BookstoreResponse> getLikedBookstoresByCategory(Member member,BookstoreCategory category,double lat, double lng){
         String memberKey = "member:liked:bookstores:" + member.getMemberId();
         Set<String> bookstoreIds = redisTemplate.opsForSet().members(memberKey);
 
         List<Long> longBookstoreIds = bookstoreIds.stream()
                 .map(Long::parseLong)
                 .collect(Collectors.toList());
-        List <Bookstore> bookstores = bookstoreRepository.findAllById(longBookstoreIds);
-
-        return bookstores.stream()
-                .map(Bookstore -> convertToBookstoreResponse(Bookstore,member))
-                .collect(Collectors.toList());
-
-    }
-
-    @Transactional
-    public List<BookstoreResponse> getLikedBookstoresByCategory(Member member,BookstoreCategory category){
-        String memberKey = "member:liked:bookstores:" + member.getMemberId();
-        Set<String> bookstoreIds = redisTemplate.opsForSet().members(memberKey);
-
-        List<Long> longBookstoreIds = bookstoreIds.stream()
-                .map(Long::parseLong)
-                .collect(Collectors.toList());
-        List <Bookstore> bookstores = bookstoreRepository.findAllById(longBookstoreIds);
-
-        return bookstores.stream()
-                .filter(bookstore -> bookstore.getBookstoreCategory()==category)
-                .map(Bookstore -> convertToBookstoreResponse(Bookstore,member))
-                .collect(Collectors.toList());
-
+        List <Bookstore> bookstores = bookstoreRepository.findAllByIdOrderByDistance(longBookstoreIds,lat,lng);
+        if(category==null){
+            return bookstores.stream()
+                    .map(Bookstore -> convertToBookstoreResponse(Bookstore,member))
+                    .collect(Collectors.toList());
+        }else {
+            return bookstores.stream()
+                    .filter(bookstore -> bookstore.getBookstoreCategory() == category)
+                    .map(Bookstore -> convertToBookstoreResponse(Bookstore, member))
+                    .collect(Collectors.toList());
+        }
     }
 }

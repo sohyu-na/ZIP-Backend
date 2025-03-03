@@ -40,20 +40,20 @@ public class OpenApiService {
                 .toString();
         Map<String, Object> responseCafe = restTemplate.getForObject(urlCafe, Map.class);
         System.out.println(responseCafe);
-        Map<String, Object> responseData = (Map<String, Object>) responseCafe.get("response");
-        Map<String, Object> body = (Map<String, Object>) responseData.get("body");
-        Map<String, Object> items = (Map<String, Object>) body.get("items");
-        List<Map<String, Object>> dataList = (List<Map<String, Object>>) items.get("item");
+        List<Map<String, Object>> dataList = extractDataListFromResponse(responseCafe);
 
         for (Map<String, Object> item : dataList) {
-            Bookstore bookstore = new Bookstore();
-            bookstore.setName((String) item.get("TITLE"));
-            bookstore.setBookstoreCategory(CAFE);
-            bookstore.setPhone((String) item.get("CONTACT_POINT"));
-            bookstore.setHours((String) item.get("DESCRIPTION"));
-            bookstore.setAddress((String) item.get("ADDRESS"));
-            bookstore.setDescription((String) item.get("SUB_DESCRIPTION"));
-            bookstore.setRating(0.0);//초기화
+            Bookstore bookstore = Bookstore.builder()
+                    .name((String) item.get("TITLE"))
+                    .bookstoreCategory(CAFE)
+                    .phone((String) item.get("CONTACT_POINT"))
+                    .hours((String) item.get("DESCRIPTION"))
+                    .latitude(Double.valueOf(((String) item.get("COORDINATES")).split(" ")[0]))
+                    .longitude(Double.valueOf(((String) item.get("COORDINATES")).split(" ")[1]))
+                    .address((String) item.get("ADDRESS"))
+                    .description((String) item.get("SUB_DESCRIPTION"))
+                    .rating(0.0)
+                    .build();
             bookstoreRepository.save(bookstore);
         }
     }
@@ -68,20 +68,20 @@ public class OpenApiService {
                 .toString();
         Map<String, Object> responseIndep = restTemplate.getForObject(urlIndep, Map.class);
         System.out.println(responseIndep);
-        Map<String, Object> responseData = (Map<String, Object>) responseIndep.get("response");
-        Map<String, Object> body = (Map<String, Object>) responseData.get("body");
-        Map<String, Object> items = (Map<String, Object>) body.get("items");
-        List<Map<String, Object>> dataList = (List<Map<String, Object>>) items.get("item");
+        List<Map<String, Object>> dataList = extractDataListFromResponse(responseIndep);
 
         for (Map<String, Object> item : dataList) {
-            Bookstore bookstore = new Bookstore();
-            bookstore.setName((String) item.get("TITLE"));
-            bookstore.setBookstoreCategory(INDEP);
-            bookstore.setPhone((String) item.get("CONTACT_POINT"));
-            bookstore.setHours((String) item.get("DESCRIPTION"));
-            bookstore.setAddress((String) item.get("ADDRESS"));
-            bookstore.setDescription((String) item.get("SUB_DESCRIPTION"));
-            bookstore.setRating(0.0);//초기화
+            Bookstore bookstore = Bookstore.builder()
+                    .name((String) item.get("TITLE"))
+                    .bookstoreCategory(INDEP)
+                    .phone((String) item.get("CONTACT_POINT"))
+                    .hours((String) item.get("DESCRIPTION"))
+                    .latitude(Double.valueOf(((String) item.get("COORDINATES")).split(",")[0]))
+                    .longitude(Double.valueOf(((String) item.get("COORDINATES")).split(",")[1]))
+                    .address((String) item.get("ADDRESS"))
+                    .description((String) item.get("SUB_DESCRIPTION"))
+                    .rating(0.0)
+                    .build();
             bookstoreRepository.save(bookstore);
         }
     }
@@ -95,22 +95,22 @@ public class OpenApiService {
                 .toString();
         Map<String, Object> responseChild = restTemplate.getForObject(urlChild, Map.class);
         System.out.println(responseChild);
-        Map<String, Object> responseData = (Map<String, Object>) responseChild.get("response");
-        Map<String, Object> body = (Map<String, Object>) responseData.get("body");
-        Map<String, Object> items = (Map<String, Object>) body.get("items");
-        List<Map<String, Object>> dataList = (List<Map<String, Object>>) items.get("item");
+        List<Map<String, Object>> dataList = extractDataListFromResponse(responseChild);
 
         for (Map<String, Object> item : dataList) {
-            Bookstore bookstore = new Bookstore();
-            bookstore.setName((String) item.get("FCLTY_NM"));
-            bookstore.setBookstoreCategory(CHILD);
-            bookstore.setPhone("0" + (String) item.get("TEL_NO"));
-            bookstore.setHours("평일개점마감시간" + convertDecimalToTime(item.get("WORKDAY_OPN_BSNS_TIME")) + "~" + convertDecimalToTime(item.get("WORKDAY_CLOS_TIME"))
-                    + "토요일개점마감시간" + convertDecimalToTime(item.get("SAT_OPN_BSNS_TIME")) + "~" + convertDecimalToTime(item.get("SAT_CLOS_TIME"))
-                    + "일요일개점마감시간" + convertDecimalToTime(item.get("SUN_OPN_BSNS_TIME")) + "~" + convertDecimalToTime(item.get("SUN_CLOS_TIME")));
-            bookstore.setAddress((String) item.get("FCLTY_ROAD_NM_ADDR"));
-            bookstore.setDescription((String) item.get("ADIT_DC"));
-            bookstore.setRating(0.0);//초기화
+            Bookstore bookstore = Bookstore.builder()
+                    .name((String) item.get("FCLTY_NM"))
+                    .bookstoreCategory(CHILD)
+                    .phone("0" + (String) item.get("TEL_NO"))
+                    .hours("평일개점마감시간" + convertDecimalToTime(item.get("WORKDAY_OPN_BSNS_TIME")) + "~" + convertDecimalToTime(item.get("WORKDAY_CLOS_TIME"))
+                            + "토요일개점마감시간" + convertDecimalToTime(item.get("SAT_OPN_BSNS_TIME")) + "~" + convertDecimalToTime(item.get("SAT_CLOS_TIME"))
+                            + "일요일개점마감시간" + convertDecimalToTime(item.get("SUN_OPN_BSNS_TIME")) + "~" + convertDecimalToTime(item.get("SUN_CLOS_TIME")))
+                    .latitude(Double.valueOf((String)item.get("FCLTY_LA")))
+                    .longitude(Double.valueOf((String)item.get("FCLTY_LO")))
+                    .address((String) item.get("FCLTY_ROAD_NM_ADDR"))
+                    .description((String) item.get("ADIT_DC"))
+                    .rating(0.0)
+                    .build();
             bookstoreRepository.save(bookstore);
         }
     }
@@ -121,5 +121,11 @@ public class OpenApiService {
         int hours = totalMinutes / 60;
         int minutes = totalMinutes % 60;
         return String.format("%02d:%02d", hours, minutes);
+    }
+    private List<Map<String, Object>> extractDataListFromResponse(Map<String, Object> response) {
+        Map<String, Object> responseData = (Map<String, Object>) response.get("response");
+        Map<String, Object> body = (Map<String, Object>) responseData.get("body");
+        Map<String, Object> items = (Map<String, Object>) body.get("items");
+        return (List<Map<String, Object>>) items.get("item");
     }
 }
