@@ -233,7 +233,6 @@ public class BookReviewService {
     // book 객체를 저장
     public void saveBook(Book book){
         try{
-            log.info("만든 객체는 "+book.toString());
             bookRepository.save(book);
         }catch (Exception e){
             throw new RuntimeException("책 저장 실패: "+e);
@@ -330,12 +329,7 @@ public class BookReviewService {
     public Page<BooksnapPreviewDto> getLikeTopReviews(Pageable pageable, Member member, ReviewSort sort){
         long start = (long) pageable.getPageNumber() * pageable.getPageSize();
         long end = start + pageable.getPageSize() - 1;
-        String key = null;
-        if(sort.equals(ReviewSort.liketop)){
-            key = BOOK_REVIEW_LIKES_KEY;
-        } else if (sort.equals(ReviewSort.trend)) {
-            key = LAST7DAYS_BOOK_REVIEW_LIKES_KEY;
-        }
+        String key = (sort.equals(ReviewSort.liketop)) ? BOOK_REVIEW_LIKES_KEY : LAST7DAYS_BOOK_REVIEW_LIKES_KEY;
         // Redis에서 좋아요 개수가 많은 리뷰 ID 목록 가져오기
         List<Long> topReviewIds = redisTemplate.opsForZSet()
                 .reverseRange(Objects.requireNonNull(key), start, end)
@@ -347,14 +341,27 @@ public class BookReviewService {
             return Page.empty();
         }
 
+        List<Long> allReviewIds = bookReviewRepository.findAllBookReviewIds();
+
+        // Redis에 없는 리뷰(좋아요 0개)를 추가
+        List<Long> mergedReviewIds = new ArrayList<>(new HashSet<>(allReviewIds)); // 중복 제거
+        mergedReviewIds.sort((id1, id2) -> {
+            int idx1 = topReviewIds.indexOf(id1);
+            int idx2 = topReviewIds.indexOf(id2);
+            if (idx1 == -1) idx1 = Integer.MAX_VALUE; // 좋아요 0개 리뷰는 마지막으로 정렬
+            if (idx2 == -1) idx2 = Integer.MAX_VALUE;
+            return Integer.compare(idx1, idx2);
+        });
+
         // DB에서 해당 리뷰 ID에 해당하는 리뷰 조회
-        List<BookReview> reviews = bookReviewRepository.findBookReviewByBookReviewIdIn(topReviewIds);
+        List<BookReview> reviews = bookReviewRepository.findBookReviewByBookReviewIdIn(mergedReviewIds);
+
 
         // 원래 정렬 유지 (Redis에서 가져온 순서대로)
         Map<Long, BookReview> reviewMap = reviews.stream()
                 .collect(Collectors.toMap(BookReview::getBookReviewId, Function.identity()));
 
-        List<BookReview> sortedReviews = topReviewIds.stream()
+        List<BookReview> sortedReviews = mergedReviewIds.stream()
                 .map(reviewMap::get)
                 .filter(Objects::nonNull)
                 .toList();
