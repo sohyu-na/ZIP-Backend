@@ -22,4 +22,7 @@ public interface BookReviewRepository extends JpaRepository<BookReview, Long> {
     Page<BookReview> findBookReviewsByCreatedAtDesc(Pageable pageable);
 
     List<BookReview> findBookReviewByBookReviewIdIn(Collection<Long> bookReviewIds);
+
+    @Query("SELECT br.bookReviewId FROM BookReview br")
+    List<Long> findAllBookReviewIds();
 }
