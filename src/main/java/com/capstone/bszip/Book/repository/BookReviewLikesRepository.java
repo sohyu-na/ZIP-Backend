@@ -27,9 +27,9 @@ public interface BookReviewLikesRepository extends JpaRepository<BookReviewLikes
 
     int countByBookReview_BookReviewId(long bookReviewId);
 
-    @Query("SELECT br1.bookReview.bookReviewId, COUNT(br1) "+
+    @Query("SELECT br1.bookReview.bookReviewId, COUNT(br1)"+
     "FROM BookReviewLikes br1 " +
-    "WHERE br1.createdAt >= :sevenDaysAgo " +
+    "WHERE br1.bookReview.createdAt >= :sevenDaysAgo " +
     "GROUP BY br1.bookReview.bookReviewId " +
     "ORDER BY COUNT (br1) DESC ")
     List<Object[]> countBookReviewLikeForLast7Days(@Param("sevenDaysAgo")LocalDateTime sevenDaysAgo);

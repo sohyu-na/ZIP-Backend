@@ -25,4 +25,8 @@ public interface BookReviewRepository extends JpaRepository<BookReview, Long> {
 
     @Query("SELECT br.bookReviewId FROM BookReview br")
     List<Long> findAllBookReviewIds();
+
+    @Query("SELECT br.bookReviewId as id, COUNT(bl) as likeCount, br.createdAt FROM BookReview br " +
+            "LEFT JOIN br.bookReviewLikesList bl GROUP BY br.bookReviewId")
+    List<Object[]> getIdAndBookLikeAndCreatedAtFromAllBookReviews();
 }

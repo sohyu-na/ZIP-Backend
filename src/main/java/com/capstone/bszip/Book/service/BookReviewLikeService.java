@@ -11,6 +11,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 
 @Service
@@ -21,6 +23,7 @@ public class BookReviewLikeService {
 
     private static final String BOOK_REVIEW_LIKES_KEY = "book_review_likes:";
     private static final String LAST7DAYS_BOOK_REVIEW_LIKES_KEY = "last7days_book_review_likes:";
+    private static final int LAST_7DAYS_LIKE_WEIGHT = 1000;
 
     public BookReviewLikeService(BookReviewLikesRepository bookReviewLikesRepository, BookReviewRepository bookReviewRepository, RedisTemplate<String, Object> redisTemplate) {
         this.bookReviewLikesRepository = bookReviewLikesRepository;
@@ -33,16 +36,12 @@ public class BookReviewLikeService {
         try{
             bookReviewLikesRepository.save(bookReviewLikes);
             BookReview bookReview = bookReviewLikes.getBookReview();
-            double timestampWeight = bookReview.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 1_000_000_000_000_0.0;
-            System.out.println("time: "+timestampWeight);
-
-
             redisTemplate.opsForZSet().incrementScore(BOOK_REVIEW_LIKES_KEY,
                     bookReview.getBookReviewId().toString(),
-                    1 + timestampWeight);
+                    1);
             redisTemplate.opsForZSet().incrementScore(LAST7DAYS_BOOK_REVIEW_LIKES_KEY,
                     bookReview.getBookReviewId().toString(),
-                    1 + timestampWeight);
+                    1);
         }catch (DataIntegrityViolationException e){
             throw new DataIntegrityViolationException("무결성 제약 조건 위반: ", e);
         } catch (Exception e){
@@ -64,11 +63,10 @@ public class BookReviewLikeService {
         try{
             bookReviewLikesRepository.delete(bookReviewLikes);
             BookReview bookReview = bookReviewLikes.getBookReview();
-            double timestampWeight = bookReview.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 1_000_000_000_000_0.0;
-            redisTemplate.opsForZSet().incrementScore(BOOK_REVIEW_LIKES_KEY, bookReview.getBookReviewId().toString(), -1 - timestampWeight);
+            redisTemplate.opsForZSet().incrementScore(BOOK_REVIEW_LIKES_KEY, bookReview.getBookReviewId().toString(), -1);
             redisTemplate.opsForZSet().incrementScore(LAST7DAYS_BOOK_REVIEW_LIKES_KEY,
                     bookReview.getBookReviewId().toString(),
-                    1 + timestampWeight);
+                    -1);
         }catch (Exception e){
             throw new RuntimeException(e);
         }
