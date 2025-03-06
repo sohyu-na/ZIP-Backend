@@ -123,7 +123,8 @@ public class BookReviewLikeController {
             // 북 리뷰랑 멤버로 좋아요 객체 가져옴
             BookReviewLikes bookReviewLikes = bookReviewLikeService.getLike(bookReview, member);
             // 해당 좋아요 객체 삭제
-            bookReviewLikeService.deleteLike(bookReviewLikes);
+            boolean isLikedFromlast7days = bookReviewLikeService.isLikedFromLast7Days(bookReviewLikes.getCreatedAt());
+            bookReviewLikeService.deleteLike(bookReviewLikes, isLikedFromlast7days);
             return ResponseEntity.ok(
                     SuccessResponse.builder()
                     .result(true)
