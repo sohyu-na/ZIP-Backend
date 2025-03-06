@@ -4,19 +4,18 @@ import com.capstone.bszip.Member.domain.Member;
 import com.capstone.bszip.Member.repository.MemberRepository;
 import com.capstone.bszip.auth.AuthService;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -56,24 +55,15 @@ public class JwtFilter extends OncePerRequestFilter {
         Claims claims;
         try {
             claims = jwtUtil.extractToken(token);
-        } catch (ExpiredJwtException e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); //401
-            response.getWriter().write("토큰이 만료되었습니다.");
-            return;
-        } catch (JwtException e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); //401
-            response.getWriter().write("유효하지 않은 토큰입니다.");
-            return;
-        } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); //500
-            response.getWriter().write("서버 오류가 발생했습니다.");
-            return;
+        } catch (Exception e){
+            SecurityContextHolder.clearContext();
+            System.out.println("유효성 검사 실패 .... jwtExceptionFilter");
+            throw e; // 예외를 다시 던짐
         }
 
         //로그아웃 검사
         if(authService.isTokenBlackList(token)) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); //401
-            response.getWriter().write("로그아웃된 사용자입니다.");
+            AuthErrorResponseUtil.setErrorResponse(response, HttpStatus.UNAUTHORIZED,"로그아웃된 사용자입니다.");
             return;
         }
 
@@ -84,7 +74,7 @@ public class JwtFilter extends OncePerRequestFilter {
         Authentication authentication = new UsernamePasswordAuthenticationToken(member, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        System.out.println("Claims: " + claims);
+        System.out.println("유효성 검사 성공 - Claims: " + claims);
 
         filterChain.doFilter(request, response);
     }

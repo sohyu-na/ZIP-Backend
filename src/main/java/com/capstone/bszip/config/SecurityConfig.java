@@ -2,6 +2,7 @@ package com.capstone.bszip.config;
 
 import com.capstone.bszip.Member.repository.MemberRepository;
 import com.capstone.bszip.auth.AuthService;
+import com.capstone.bszip.auth.security.JwtExceptionFilter;
 import com.capstone.bszip.auth.security.JwtFilter;
 import com.capstone.bszip.auth.security.JwtUtil;
 import io.jsonwebtoken.security.Keys;
@@ -16,7 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -64,13 +64,17 @@ public class SecurityConfig {
             "/webjars/**"
     };
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtUtil jwtUtil, AuthService authService, MemberRepository memberRepository) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   JwtUtil jwtUtil,
+                                                   AuthService authService,
+                                                   MemberRepository memberRepository) throws Exception {
 
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable()) //CSRF 비활성화
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(new JwtFilter(jwtUtil, authService,memberRepository ), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtFilter(jwtUtil, authService,memberRepository), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtExceptionFilter(), JwtFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(SWAGGER_WHITELIST).permitAll() // Swagger UI 접근 허용
                         .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -80,10 +84,10 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .formLogin(formLogin -> formLogin.disable())
                 .httpBasic(httpBasic -> httpBasic.disable());
-                //.formLogin(formLogin -> formLogin
-                 //       .loginPage("/login")
-                 //       .defaultSuccessUrl("/", true)
-                 //       .failureUrl("/login?error=true"));//에러
+        //.formLogin(formLogin -> formLogin
+        //       .loginPage("/login")
+        //       .defaultSuccessUrl("/", true)
+        //       .failureUrl("/login?error=true"));//에러
 
         return http.build();
     }
