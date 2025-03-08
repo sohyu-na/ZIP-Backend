@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -33,11 +34,10 @@ public class BookReviewLikeController {
     * */
     @Operation(summary = "책 한 줄 리뷰에 좋아요", description = "[로그인 필수] 책 리뷰 아이디를 넘겨주어야 합니다!")
     @PostMapping("/booksnap/like")
-    public ResponseEntity<?> likeBookReview(Authentication authentication, @RequestBody BookReviewLikeRequest bookReviewLikeRequest){
+    public ResponseEntity<?> likeBookReview(@AuthenticationPrincipal Member member, @RequestBody BookReviewLikeRequest bookReviewLikeRequest){
 
         try{
             // 멤버 가지고 오기
-            Member member = (Member) authentication.getPrincipal();
             if(member == null){
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                         ErrorResponse.builder()
@@ -61,7 +61,11 @@ public class BookReviewLikeController {
 
             if(bookReviewLikeService.isAleadyLiked(bookReview, member)){
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                        member.getNickname()+"님이 이미 좋아요하셨습니다...😅"
+                        ErrorResponse.builder()
+                                        .result(false)
+                                        .message(member.getNickname()+"님이 이미 좋아요하셨습니다...😅")
+                                        .build()
+
                 );
             }
             // 좋아요 객체 만들기
@@ -92,10 +96,9 @@ public class BookReviewLikeController {
 
     @Operation(summary = "책 한 줄 리뷰에 좋아요 취소", description = "[로그인 필수] 책 리뷰 아이디를 넘겨주어야 합니다!")
     @DeleteMapping("/booksnap/unlike")
-    public ResponseEntity<?> unlikeBookReview(Authentication authentication, @RequestBody BookReviewLikeRequest bookReviewLikeRequest){
+    public ResponseEntity<?> unlikeBookReview(@AuthenticationPrincipal Member member, @RequestBody BookReviewLikeRequest bookReviewLikeRequest){
         try{
             // 멤버 객체랑 북 리뷰 객체 가져오기
-            Member member = (Member) authentication.getPrincipal();
             if(member == null){
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                         ErrorResponse.builder()
@@ -110,13 +113,18 @@ public class BookReviewLikeController {
             // 좋아요 누른 적이 없는데 삭제하려고 하는 경우
             if(!bookReviewLikeService.isAleadyLiked(bookReview, member)){
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                        member.getNickname()+"님이 좋아요 한 적이 없는 리뷰입니다...😅"
+                        ErrorResponse.builder()
+                                .result(false)
+                                .message(member.getNickname()+"님이 좋아요 한 적이 없는 리뷰입니다...😅")
+                                .build()
+
                 );
             }
             // 북 리뷰랑 멤버로 좋아요 객체 가져옴
             BookReviewLikes bookReviewLikes = bookReviewLikeService.getLike(bookReview, member);
             // 해당 좋아요 객체 삭제
-            bookReviewLikeService.deleteLike(bookReviewLikes);
+            boolean isLikedFromlast7days = bookReviewLikeService.isLikedFromLast7Days(bookReviewLikes.getCreatedAt());
+            bookReviewLikeService.deleteLike(bookReviewLikes, isLikedFromlast7days);
             return ResponseEntity.ok(
                     SuccessResponse.builder()
                     .result(true)

@@ -341,27 +341,27 @@ public class BookReviewService {
             return Page.empty();
         }
 
-        List<Long> allReviewIds = bookReviewRepository.findAllBookReviewIds();
-
-        // Redis에 없는 리뷰(좋아요 0개)를 추가
-        List<Long> mergedReviewIds = new ArrayList<>(new HashSet<>(allReviewIds)); // 중복 제거
-        mergedReviewIds.sort((id1, id2) -> {
-            int idx1 = topReviewIds.indexOf(id1);
-            int idx2 = topReviewIds.indexOf(id2);
-            if (idx1 == -1) idx1 = Integer.MAX_VALUE; // 좋아요 0개 리뷰는 마지막으로 정렬
-            if (idx2 == -1) idx2 = Integer.MAX_VALUE;
-            return Integer.compare(idx1, idx2);
-        });
+//        List<Long> allReviewIds = bookReviewRepository.findAllBookReviewIds();
+//
+//        // Redis에 없는 리뷰(좋아요 0개)를 추가
+//        List<Long> mergedReviewIds = new ArrayList<>(new HashSet<>(allReviewIds)); // 중복 제거
+//        mergedReviewIds.sort((id1, id2) -> {
+//            int idx1 = topReviewIds.indexOf(id1);
+//            int idx2 = topReviewIds.indexOf(id2);
+//            if (idx1 == -1) idx1 = Integer.MAX_VALUE; // 좋아요 0개 리뷰는 마지막으로 정렬
+//            if (idx2 == -1) idx2 = Integer.MAX_VALUE;
+//            return Integer.compare(idx1, idx2);
+//        });
 
         // DB에서 해당 리뷰 ID에 해당하는 리뷰 조회
-        List<BookReview> reviews = bookReviewRepository.findBookReviewByBookReviewIdIn(mergedReviewIds);
+        List<BookReview> reviews = bookReviewRepository.findBookReviewByBookReviewIdIn(topReviewIds);
 
 
         // 원래 정렬 유지 (Redis에서 가져온 순서대로)
         Map<Long, BookReview> reviewMap = reviews.stream()
                 .collect(Collectors.toMap(BookReview::getBookReviewId, Function.identity()));
 
-        List<BookReview> sortedReviews = mergedReviewIds.stream()
+        List<BookReview> sortedReviews = topReviewIds.stream()
                 .map(reviewMap::get)
                 .filter(Objects::nonNull)
                 .toList();
@@ -396,7 +396,7 @@ public class BookReviewService {
                 .toList();
 
         // 최종적으로 Page 객체로 변환하여 반환
-        return new PageImpl<>(reviewDtos, pageable, redisTemplate.opsForZSet().size(BOOK_REVIEW_LIKES_KEY));
+        return new PageImpl<>(reviewDtos, pageable, redisTemplate.opsForZSet().size(key));
 
     }
 
