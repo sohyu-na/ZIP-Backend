@@ -46,6 +46,7 @@ public class KakaoLoginController {
            );
        }
 
+       // 로그인
        if(loginWay == 3){
            try{
                TokenResponse tokens = kakaoService.loginUser(kakaoEmail);
@@ -77,7 +78,7 @@ public class KakaoLoginController {
            }
 
        }
-
+       // 카카오 회원가입
        if(loginWay == 1) {
            try{
            SignupRequest signupRequest = new SignupRequest();
