@@ -31,7 +31,13 @@ public class PickedBookController {
     public ResponseEntity<?> createPickedBook(@AuthenticationPrincipal Member member,
                                            @RequestBody PickedBookRequest pickedBookRequest) {
         try{
-            System.out.println(member);
+            if(member == null){
+                return ResponseEntity.status(401).body(
+                        ErrorResponse.builder()
+                                .message("로그인 후 이용해주세요.")
+                                .build()
+                );
+            }
             Long isbn = Long.parseLong(pickedBookRequest.getIsbn());
             Book book = bookReviewService.getBookByIsbn(isbn);
             if (book == null) {

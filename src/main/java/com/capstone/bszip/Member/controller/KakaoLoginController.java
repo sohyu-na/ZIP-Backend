@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Map;
 
@@ -49,11 +50,28 @@ public class KakaoLoginController {
            try{
                TokenResponse tokens = kakaoService.loginUser(kakaoEmail);
 
-               return ResponseEntity.ok(tokens);
+               return ResponseEntity.ok(
+                       SuccessResponse.builder()
+                               .result(true)
+                               .status(200)
+                               .data(tokens)
+                               .build()
+               );
            }catch (BadCredentialsException e) {
                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                        .body(Map.of("error", "잘못된 접근"));
-           }catch(Exception e){
+           }catch (HttpClientErrorException e){
+               return ResponseEntity.status(400)
+                       .body(
+                               ErrorResponse.builder()
+                               .result(false)
+                               .status(400)
+                               .message("카카오 api 오류")
+                                       .detail(e.getMessage())
+                                       .build()
+                       );
+           }
+           catch(Exception e){
                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                        .body(Map.of("message", e.getMessage()));
            }

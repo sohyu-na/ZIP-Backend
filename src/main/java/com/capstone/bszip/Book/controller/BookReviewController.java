@@ -135,11 +135,8 @@ public class BookReviewController {
     * - 책 ID, 별점, 리뷰 받아서 저장*/
     @Operation(summary = "책 한 줄 리뷰 등록", description = "isbn, 리뷰 텍스트, 별점을 보내면 책을 저장하고 리뷰를 저장합니다. 예시 응답은 제목과 동일합니다.")
     @PostMapping("/new-review")
-    public ResponseEntity<?> writeBookReview(Authentication authentication, @RequestBody BookReviewRequest bookReviewRequest) {
+    public ResponseEntity<?> writeBookReview(@AuthenticationPrincipal Member member, @RequestBody BookReviewRequest bookReviewRequest) {
         try{
-            Member member = (Member) authentication.getPrincipal(); // 맴버객체 가져옴
-            // 지금 책이 디비에 없으면 저장하기
-
             if(member == null){
                 return ResponseEntity.status(401).body(
                         ErrorResponse.builder()
@@ -202,9 +199,8 @@ public class BookReviewController {
     * */
     @Operation(summary = "책 한 줄 리뷰 삭제", description = "[로그인 필수] 로그인한 사용자가 작성한 책 리뷰의 id를 받아와서 삭제")
     @DeleteMapping("/reviews/{bookReviewId}")
-    public ResponseEntity<?> deleteBookReview(Authentication authentication, @PathVariable Long bookReviewId) {
+    public ResponseEntity<?> deleteBookReview(@AuthenticationPrincipal Member member, @PathVariable Long bookReviewId) {
         try{
-            Member member = (Member) authentication.getPrincipal();
             if(member == null){
                 return ResponseEntity.status(401).body(
                         ErrorResponse.builder()
@@ -252,9 +248,8 @@ public class BookReviewController {
     * */
     @Operation(summary = "책 한 줄 리뷰 수정", description = "[로그인 필수] 로그인한 사용자가 작성한 책 리뷰의 id를 받아와서 수정")
     @PutMapping("/reviews/{bookReviewId}")
-    public ResponseEntity<?> updateBookReview(Authentication authentication, @PathVariable Long bookReviewId, @RequestBody BookReviewUpdateDto bookReviewUpdateDto) {
+    public ResponseEntity<?> updateBookReview(@AuthenticationPrincipal Member member, @PathVariable Long bookReviewId, @RequestBody BookReviewUpdateDto bookReviewUpdateDto) {
         try{
-            Member member = (Member) authentication.getPrincipal();
             if(member == null){
                 return ResponseEntity.status(401).body(
                         ErrorResponse.builder()
@@ -282,14 +277,6 @@ public class BookReviewController {
                             .build()
             );
 
-        }catch (NullPointerException e){
-            return ResponseEntity.status(400).body(
-                    ErrorResponse.builder()
-                            .result(false)
-                            .status(400)
-                            .message("누락된 값 존재")
-                            .build()
-            );
         }
         catch (Exception e) {
             throw new RuntimeException(e);
