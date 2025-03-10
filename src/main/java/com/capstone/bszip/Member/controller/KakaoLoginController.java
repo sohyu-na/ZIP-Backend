@@ -88,11 +88,24 @@ public class KakaoLoginController {
            String token = JwtUtil.issueTempToken(kakaoEmail);
            return ResponseEntity.ok()
                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                   .body(Map.of("message", "TEMP_TOKEN_ISSUED"));
+                   .body(
+                           SuccessResponse.builder()
+                           .result(true)
+                                   .status(HttpStatus.OK.value())
+                                   .message("임시 토큰 발급 완료")
+                                   .data(Map.of("token", token))
+                                   .build());
             }
            catch (Exception e) {
                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                       .body(Map.of("message", e.getMessage()));
+                       .body(
+                               ErrorResponse.builder()
+                               .result(false)
+                               .status(500)
+                               .message("서버 오류")
+                                       .detail(e.getMessage())
+                                       .build()
+                       );
            }
        }
 
