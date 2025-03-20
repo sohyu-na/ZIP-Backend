@@ -1,6 +1,6 @@
 package com.capstone.bszip.Member.controller;
 
-import com.capstone.bszip.Member.service.dto.TokenResponse;
+import com.capstone.bszip.auth.dto.TokenResponse;
 import com.capstone.bszip.auth.AuthService;
 import com.capstone.bszip.auth.security.JwtUtil;
 import com.capstone.bszip.Member.service.MemberService;
@@ -127,6 +127,7 @@ public class MemberController {
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response){
         try{
              TokenResponse tokens = memberService.loginUser(loginRequest);
+             authService.login(loginRequest.getEmail(), tokens.getRefreshToken());
             return ResponseEntity.ok(SuccessResponse.builder()
                     .result(true)
                     .status(HttpStatus.OK.value())

@@ -13,8 +13,11 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class AuthService {
     private final BlackListRepository blackListRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenService refreshTokenService;
 
+    public void login(String email, String refreshToken) {
+        refreshTokenService.saveRefreshToken(email, refreshToken);
+    }
     @Transactional
     public void logout (String email,String token, Date expirationDate){
         refreshTokenRepository.deleteByEmail(email);
