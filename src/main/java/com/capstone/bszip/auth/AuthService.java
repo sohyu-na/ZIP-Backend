@@ -2,7 +2,7 @@ package com.capstone.bszip.auth;
 
 import com.capstone.bszip.auth.blackList.BlackList;
 import com.capstone.bszip.auth.blackList.BlackListRepository;
-import com.capstone.bszip.auth.refreshToken.RefreshTokenRepository;
+import com.capstone.bszip.auth.refreshToken.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,13 +19,15 @@ public class AuthService {
         refreshTokenService.saveRefreshToken(email, refreshToken);
     }
     @Transactional
-    public void logout (String email,String token, Date expirationDate){
-        refreshTokenRepository.deleteByEmail(email);
+    public void logout (String refreshToken,String accessToken, Date expirationDate){
+        //refreshtoken 삭제
+        refreshTokenService.deleteRefreshToken(refreshToken);
 
-        BlackList blackList = new BlackList(token, expirationDate);
+        //blacklist 저장
+        BlackList blackList = new BlackList(accessToken, expirationDate);
         blackListRepository.save(blackList);
     }
-
+    @Transactional
     public boolean isTokenBlackList(String token){
         return blackListRepository.findById(token).isPresent();
     }

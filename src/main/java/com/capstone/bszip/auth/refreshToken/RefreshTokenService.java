@@ -20,7 +20,7 @@ public class RefreshTokenService {
         return redisTemplate.opsForValue().get(refreshToken);
     }
     //삭제 - 로그아웃시
-    public void deleteRefreshToken(String email) {
-        redisTemplate.delete("refreshtoken:" + email);
+    public void deleteRefreshToken(String refreshToken) {
+        redisTemplate.delete("refreshtoken:" + refreshToken);
     }
 }
