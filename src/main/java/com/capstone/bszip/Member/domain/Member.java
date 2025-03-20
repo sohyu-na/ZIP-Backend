@@ -2,6 +2,7 @@ package com.capstone.bszip.Member.domain;
 
 import com.capstone.bszip.Book.domain.BookReview;
 import com.capstone.bszip.Book.domain.PickedBook;
+import com.capstone.bszip.Book.domain.SearchHistories;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
@@ -19,7 +20,7 @@ import java.util.Set;
 @Entity
 @Data
 @EntityListeners(AuditingEntityListener.class)
-@ToString(exclude = {"bookReviews", "bookReviewLikes", "pickedBooks"})
+@ToString(exclude = {"bookReviews", "bookReviewLikes", "pickedBooks", "searchHistoriesList"})
 @Table(name = "members") // 테이블 이름 매핑
 public class Member {
     @Id
@@ -65,4 +66,7 @@ public class Member {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PickedBook> pickedBooks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SearchHistories> searchHistoriesList = new ArrayList<>();
 }
