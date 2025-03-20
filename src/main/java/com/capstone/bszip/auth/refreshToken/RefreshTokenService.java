@@ -17,7 +17,7 @@ public class RefreshTokenService {
     }
     //존재 여부 확인
     public String getEmailByRefreshToken(String refreshToken){
-        return redisTemplate.opsForValue().get(refreshToken);
+        return redisTemplate.opsForValue().get("refreshtoken:" + refreshToken);
     }
     //삭제 - 로그아웃시
     public void deleteRefreshToken(String refreshToken) {
