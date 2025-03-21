@@ -3,10 +3,10 @@ package com.capstone.bszip.Member.controller;
 import com.capstone.bszip.Member.service.KakaoService;
 import com.capstone.bszip.Member.service.MemberService;
 import com.capstone.bszip.Member.service.dto.SignupRequest;
-import com.capstone.bszip.Member.service.dto.TokenResponse;
+import com.capstone.bszip.auth.AuthService;
+import com.capstone.bszip.auth.dto.TokenResponse;
 import com.capstone.bszip.auth.security.JwtUtil;
 import com.capstone.bszip.commonDto.ErrorResponse;
-import com.capstone.bszip.commonDto.SuccessResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +26,7 @@ import java.util.Map;
 public class KakaoLoginController {
     private final KakaoService kakaoService;
     private final MemberService memberService;
+    private final AuthService authService;
 
     @ResponseBody
     @GetMapping("/login")
@@ -50,6 +51,7 @@ public class KakaoLoginController {
        if(loginWay == 3){
            try{
                TokenResponse tokens = kakaoService.loginUser(kakaoEmail);
+               authService.login(kakaoEmail,tokens.getRefreshToken());
 
                return ResponseEntity.ok(
                        SuccessResponse.builder()

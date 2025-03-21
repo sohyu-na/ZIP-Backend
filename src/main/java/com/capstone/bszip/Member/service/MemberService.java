@@ -3,9 +3,7 @@ package com.capstone.bszip.Member.service;
 import com.capstone.bszip.Member.domain.Member;
 import com.capstone.bszip.Member.domain.MemberJoinType;
 import com.capstone.bszip.Member.repository.MemberRepository;
-import com.capstone.bszip.Member.service.dto.TokenResponse;
-import com.capstone.bszip.auth.refreshToken.RefreshToken;
-import com.capstone.bszip.auth.refreshToken.RefreshTokenRepository;
+import com.capstone.bszip.auth.dto.TokenResponse;
 import com.capstone.bszip.auth.security.JwtUtil;
 import com.capstone.bszip.Member.service.dto.LoginRequest;
 import com.capstone.bszip.Member.service.dto.SignupRequest;
@@ -26,7 +24,6 @@ import static com.capstone.bszip.Member.domain.MemberJoinType.DEFAULT;
 @Service
 public class MemberService {
     private final MemberRepository memberRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
@@ -84,18 +81,6 @@ public class MemberService {
         // 임시 저장소에서 데이터 삭제
         temporaryStorage.remove(email);
     }
-    public void updateRefreshToken(String email,String refreshToken){
-        Optional<Member> memberOptional = memberRepository.findByEmail(email);
-        if(memberOptional.isPresent()){
-            Member member = memberOptional.get();
-            RefreshToken token = new RefreshToken();
-            token.setEmail(member.getEmail());
-            token.setRefreshToken(refreshToken);
-            token.setExpiryDate(Instant.now().plusSeconds(7 * 24 * 60 * 60));
-
-            refreshTokenRepository.save(token);
-        }
-    }
     @Transactional
     public TokenResponse loginUser(LoginRequest loginRequest){
         Member member = memberRepository.findByEmail(loginRequest.getEmail())
@@ -108,8 +93,6 @@ public class MemberService {
             //토큰 생성
             String accessToken = JwtUtil.createAccessToken(email);
             String refreshToken = JwtUtil.createRefreshToken(email);
-            //refresh 토큰 db 저장
-            updateRefreshToken(email,refreshToken);
             return new TokenResponse(accessToken, refreshToken);
         }
         else {

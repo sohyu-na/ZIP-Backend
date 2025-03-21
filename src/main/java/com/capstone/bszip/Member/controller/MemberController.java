@@ -1,6 +1,7 @@
 package com.capstone.bszip.Member.controller;
 
-import com.capstone.bszip.Member.service.dto.TokenResponse;
+import com.capstone.bszip.auth.dto.TokenRequest;
+import com.capstone.bszip.auth.dto.TokenResponse;
 import com.capstone.bszip.auth.AuthService;
 import com.capstone.bszip.auth.security.JwtUtil;
 import com.capstone.bszip.Member.service.MemberService;
@@ -127,6 +128,7 @@ public class MemberController {
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response){
         try{
              TokenResponse tokens = memberService.loginUser(loginRequest);
+             authService.login(loginRequest.getEmail(), tokens.getRefreshToken());
             return ResponseEntity.ok(SuccessResponse.builder()
                     .result(true)
                     .status(HttpStatus.OK.value())
@@ -166,7 +168,7 @@ public class MemberController {
             content = @Content(schema = @Schema(implementation = TokenResponse.class)))
     @ApiResponse(responseCode = "500", description = "서버 내부 오류",
             content = @Content(schema = @Schema(implementation = Map.class)))
-    public ResponseEntity<?> logout(HttpServletRequest httpServletRequest){
+    public ResponseEntity<?> logout(HttpServletRequest httpServletRequest,@RequestBody TokenRequest tokenRequest){
         String authorizationHeader = httpServletRequest.getHeader("Authorization");
 
         if(authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")){
@@ -174,14 +176,14 @@ public class MemberController {
                     .body(ErrorResponse.builder()
                             .result(false)
                             .status(HttpStatus.BAD_REQUEST.value())
-                            .message("토큰을 찾을 수 없습니다.")
+                            .message("Access token을 찾을 수 없습니다.")
                             .build());
         }
         String accessToken = authorizationHeader.substring(7);
+        String refreshToken = tokenRequest.getRefreshToken();
         try {
-            String email = JwtUtil.extractEmail(accessToken);
             Date expirationDate = JwtUtil.getExpiration(accessToken);
-            authService.logout(email, accessToken, expirationDate);
+            authService.logout(refreshToken, accessToken, expirationDate);
             return ResponseEntity.ok(SuccessResponse.builder()
                     .result(true)
                     .status(HttpStatus.OK.value())
