@@ -7,6 +7,7 @@ import com.capstone.bszip.auth.AuthService;
 import com.capstone.bszip.auth.dto.TokenResponse;
 import com.capstone.bszip.auth.security.JwtUtil;
 import com.capstone.bszip.commonDto.ErrorResponse;
+import com.capstone.bszip.commonDto.SuccessResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
