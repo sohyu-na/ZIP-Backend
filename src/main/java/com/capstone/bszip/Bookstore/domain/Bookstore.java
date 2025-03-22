@@ -46,6 +46,9 @@ public class Bookstore {
     @Column(name="rating")
     private Double rating;
 
+    @Column(name="keyword")
+    private String keyword;
+
     // 별점만 변경하는 메서드
     public Bookstore updateRating(double newRating) {
         return this.toBuilder().rating(newRating).build();
