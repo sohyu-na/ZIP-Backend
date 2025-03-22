@@ -10,7 +10,8 @@ public class BookstoreResponse {
     private Long bookstoreId;
     private String name;
     private double rating;
-    private BookstoreCategory bookstoreCategory;
+    //private BookstoreCategory bookstoreCategory;
+    private String keyword;
     private String address;
     private boolean liked;
 
