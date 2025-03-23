@@ -82,22 +82,27 @@ public class SearchHistoriesController {
             mediaType = "application/json",
             schema = @Schema(implementation = SuccessResponse.class),
             examples = @ExampleObject(value = """
-                                {
-                                    "status": 200,
-                                    "result": true,
-                                    "message": "회원 검색 기록 불러오기",
-                                    "data": {
-                                        isEnd: true,
-                                        searchHistory: [
-                                            { id : 1,
-                                              searchWord : "모순"
-                                            },
-                                            { id : 2,
-                                              searchWord : "사람은 무엇으로 사는가"
-                                            }
-                                        ]
-                                }
-                                """)
+                        {
+                            "status": 200,
+                            "result": true,
+                            "message": "회원 검색 기록 불러오기",
+                            "data": {
+                                "isEnd": true,
+                                "totalElements": 5,
+                                "totalPages": 1,
+                                "searchHistory": [
+                                    {
+                                        "id": 1,
+                                        "searchWord": "모순"
+                                    },
+                                    {
+                                        "id": 2,
+                                        "searchWord": "사람은 무엇으로 사는가"
+                                    }
+                                ]
+                            }
+                        }
+                        """)
     )
     )
     @ApiResponse(responseCode = "400", description = "잘못된 요청")
