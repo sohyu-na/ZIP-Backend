@@ -5,11 +5,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
+@Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-public class SearchDto {
-    Long id;
-    String searchWord;
+public class SearchHistoryResponse {
+    List<?> searchHistory;
+    boolean isEnd;
+    int totalPages;
+    Long totalElements;
 }
