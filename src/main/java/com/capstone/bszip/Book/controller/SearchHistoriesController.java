@@ -43,7 +43,15 @@ public class SearchHistoriesController {
                         ErrorResponse.builder().status(401).result(false).message("로그인 후 이용해주세요.").build()
                 );
             }
-
+            if(searchRequest.getSearchWord() == null || searchRequest.getSearchWord().trim().isEmpty()){
+                return ResponseEntity.status(400).body(
+                        ErrorResponse.builder()
+                                .status(400)
+                                .result(false)
+                                .message("검색어를 입력해야합니다.")
+                                .build()
+                );
+            }
             String searchWord = searchRequest.getSearchWord().toUpperCase();
             String searchType = searchRequest.getSearchType().toUpperCase();
 
