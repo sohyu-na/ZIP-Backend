@@ -1,5 +1,6 @@
 package com.capstone.bszip.Book.domain;
 
+import com.capstone.bszip.Bookstore.domain.Bookstore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -41,6 +42,12 @@ public class Book {
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PickedBook> pickedBooks = new ArrayList<>();
+
+    @Column(name = "is_indep", nullable = false)
+    private boolean isIndep = false;
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookstoreBook> bookstoreBookList = new ArrayList<>();
 
     public Book(Long bookId, String bookName, String publisher, List<String> authors, String bookImageUrl, String content) {
         this.bookId = bookId;
