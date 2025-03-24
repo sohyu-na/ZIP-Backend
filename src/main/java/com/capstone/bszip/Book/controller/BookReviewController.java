@@ -36,10 +36,10 @@ public class BookReviewController {
 
     private final BookReviewService bookReviewService;
     /*
-    * 제목으로 도서 검색 api
+    * 책제목과 작가를 입력하여 도서 검색 api
     * - 책 ID, 이미지 url, 책 제목, 작가,출판사 제공*/
     @GetMapping("/book-search")
-    @Operation(summary = "책 검색", description = "책 제목을 입력하여 책제목, 작가, 출판사, isbn, 책 표지 url을 검색하여 볼러옵니다.")
+    @Operation(summary = "책 검색", description = "책 제목 혹은 작가를 입력하여 책제목, 작가, 출판사, isbn, 책 표지 url을 검색하여 볼러옵니다.")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "검색 성공", content = @Content(schema = @Schema(implementation = BookSearchResponse.class),
         examples = {@ExampleObject(
                 name = "Success example : 모순 검색 시",
@@ -69,9 +69,24 @@ public class BookReviewController {
                         "]" +
                         "}"
         )})),})
-    public ResponseEntity<?> searchBookByTitle(@RequestParam String query, @RequestParam(required = false, defaultValue = "1")int page) {
+    public ResponseEntity<?> searchBook(@RequestParam BookSearchType type, @RequestParam String query, @RequestParam(required = false, defaultValue = "1")int page) {
         try{
-            String bookJson = bookReviewService.searchBooksByTitle(query, page);
+            if(query == null || query.trim().isEmpty()){
+                return ResponseEntity.status(400).body(
+                        ErrorResponse.builder()
+                                .status(400)
+                                .message("E01: 검색어를 입력해주세요.")
+                                .detail("E01")
+                                .build()
+                );
+            }
+            String bookJson = null;
+            if(type.equals(BookSearchType.title)){
+                bookJson = bookReviewService.searchBooksByTitle(query, page);
+            }
+            if(type.equals(BookSearchType.author)){
+                bookJson = bookReviewService.searchBooksByAuthor(query, page);
+            }
             if(bookJson == null){
                 return ResponseEntity.noContent().build();
             }
@@ -90,39 +105,6 @@ public class BookReviewController {
                             .result(false)
                             .status(HttpServletResponse.SC_BAD_REQUEST).message("검색할 사항을 입력해주세요")
                     .build()
-            );
-        }
-        catch (Exception e){
-            throw new RuntimeException(e);
-        }
-    }
-
-    /*
-     * 작가로 도서 검색 api
-     * - 책 ID, 이미지 url, 책 제목, 작가,출판사 제공*/
-    @Operation(summary = "작가로 책 검색", description = "작가를 입력하여 책제목, 작가, 출판사, isbn, 책 표지 url를 볼러옵니다.")
-    @GetMapping("/book-search-by-author")
-    public ResponseEntity<?> searchBookByAuthor(@RequestParam String query, @RequestParam(required = false, defaultValue = "1")int page) {
-        try{
-            String bookJson = bookReviewService.searchBooksByAuthor(query, page);
-            if(bookJson == null){
-                return ResponseEntity.noContent().build();
-            }
-            AddIsEndBookResponse addIsEndBookResponse = bookReviewService.convertToBookSearchResponse(bookJson);
-            return ResponseEntity.ok(
-                    SuccessResponse.builder()
-                            .result(true)
-                            .status(HttpServletResponse.SC_OK)
-                            .data(addIsEndBookResponse)
-                            .message("검색 성공")
-                            .build()
-            );
-        } catch (NullPointerException e){
-            return ResponseEntity.status(400).body(
-                    ErrorResponse.builder()
-                            .result(false)
-                            .status(HttpServletResponse.SC_BAD_REQUEST).message("검색할 사항을 입력해주세요")
-                            .build()
             );
         }
         catch (Exception e){
