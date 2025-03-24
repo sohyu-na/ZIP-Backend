@@ -62,7 +62,7 @@ public class OpenApiService {
     public void saveIndepData() {
         String urlIndep = UriComponentsBuilder.fromHttpUrl(API_URL_INDEP)
                 .queryParam("serviceKey", BOOKSTORE_INDEP_KEY)
-                .queryParam("numOfRows", 10) //테스트로 10개만
+                //.queryParam("numOfRows", 10) //테스트로 10개만
                 .queryParam("pageNo", 1)
                 .build()
                 .toString();
@@ -76,6 +76,7 @@ public class OpenApiService {
                     .bookstoreCategory(INDEP)
                     .phone((String) item.get("CONTACT_POINT"))
                     .hours((String) item.get("DESCRIPTION"))
+                    .keyword(((String)item.get("SUBJECT_KEYWORD")).split(",")[1])
                     .latitude(Double.valueOf(((String) item.get("COORDINATES")).split(",")[0]))
                     .longitude(Double.valueOf(((String) item.get("COORDINATES")).split(",")[1]))
                     .address((String) item.get("ADDRESS"))

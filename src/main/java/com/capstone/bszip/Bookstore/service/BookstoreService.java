@@ -55,12 +55,16 @@ public class BookstoreService {
         }else{ //로그인 안한 사용자
             isLiked = false;
         }
+        String modKeyword=bookstore.getKeyword();
+        if(modKeyword.equals(" 일반")){
+            modKeyword =" 일반서적";
+        }
 
         return new BookstoreResponse(
                 bookstore.getBookstoreId(),
                 bookstore.getName(),
                 bookstore.getRating(),
-                bookstore.getBookstoreCategory(),
+                modKeyword,
                 addressExceptCode,
                 isLiked
         );
