@@ -1,5 +1,6 @@
 package com.capstone.bszip.Book.domain;
 
+import com.capstone.bszip.Book.dto.SearchType;
 import com.capstone.bszip.Member.domain.Member;
 import jakarta.persistence.*;
 import lombok.*;

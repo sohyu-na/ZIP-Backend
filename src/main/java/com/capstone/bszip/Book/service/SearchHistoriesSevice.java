@@ -1,7 +1,7 @@
 package com.capstone.bszip.Book.service;
 
 import com.capstone.bszip.Book.domain.SearchHistories;
-import com.capstone.bszip.Book.domain.SearchType;
+import com.capstone.bszip.Book.dto.SearchType;
 import com.capstone.bszip.Book.dto.SearchDto;
 import com.capstone.bszip.Book.dto.SearchHistoryResponse;
 import com.capstone.bszip.Book.repository.SearchHistoriesRepository;
@@ -14,8 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
 // 📍성능 개선을 위해 추후에 Redis로 변경할 것
 @Service
 @Slf4j

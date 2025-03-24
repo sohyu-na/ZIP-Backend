@@ -1,4 +1,4 @@
-package com.capstone.bszip.Book.domain;
+package com.capstone.bszip.Book.dto;
 
 public enum SearchType {
     BOOKTITLE, AUTHOR;
