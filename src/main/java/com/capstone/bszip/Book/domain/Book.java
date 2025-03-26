@@ -1,11 +1,8 @@
 package com.capstone.bszip.Book.domain;
 
-import com.capstone.bszip.Bookstore.domain.Bookstore;
+import com.capstone.bszip.Book.dto.BookType;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.ArrayList;
@@ -15,17 +12,20 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 @Getter
-@ToString(exclude = {"bookReviews", "pickedBooks"})
+@ToString(exclude = {"bookReviews", "pickedBooks", "bookstoreBookList"})
+@Builder
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 @Table(name="Books")
 public class Book {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "book_id")
     private Long bookId;
 
     @Column(name = "book_name", nullable = false)
     private String bookName;
 
-    @Column(name = "publisher", nullable = false)
+    @Column(name = "publisher", nullable = true)
     private String publisher;
 
     @Column(name = "author", nullable = false)
@@ -43,8 +43,10 @@ public class Book {
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PickedBook> pickedBooks = new ArrayList<>();
 
-    @Column(name = "is_indep", nullable = false)
-    private boolean isIndep = false;
+
+    @Column(name = "book_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private BookType bookType;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookstoreBook> bookstoreBookList = new ArrayList<>();

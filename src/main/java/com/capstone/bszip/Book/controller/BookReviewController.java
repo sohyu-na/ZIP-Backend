@@ -5,6 +5,7 @@ import com.capstone.bszip.Book.domain.BookReview;
 import com.capstone.bszip.Book.dto.*;
 import com.capstone.bszip.Book.dto.BooksnapPreviewDto;
 import com.capstone.bszip.Book.service.BookReviewService;
+import com.capstone.bszip.Book.service.IndepBookService;
 import com.capstone.bszip.Member.domain.Member;
 import com.capstone.bszip.commonDto.ErrorResponse;
 import com.capstone.bszip.commonDto.SuccessResponse;
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.*;
 public class BookReviewController {
 
     private final BookReviewService bookReviewService;
+    private final IndepBookService indepBookService;
     /*
     * 책제목과 작가를 입력하여 도서 검색 api
     * - 책 ID, 이미지 url, 책 제목, 작가,출판사 제공*/
@@ -69,7 +71,7 @@ public class BookReviewController {
                         "]" +
                         "}"
         )})),})
-    public ResponseEntity<?> searchBook(@RequestParam BookSearchType type, @RequestParam String query, @RequestParam(required = false, defaultValue = "1")int page) {
+    public ResponseEntity<?> searchBook(@RequestParam BookType booktype, @RequestParam BookSearchType searchtype, @RequestParam String query, @RequestParam(required = false, defaultValue = "1")int page) {
         try{
             if(query == null || query.trim().isEmpty()){
                 return ResponseEntity.status(400).body(
@@ -81,12 +83,39 @@ public class BookReviewController {
                 );
             }
             String bookJson = null;
-            if(type.equals(BookSearchType.title)){
-                bookJson = bookReviewService.searchBooksByTitle(query, page);
+            if(booktype.equals(BookType.normal)){
+                if(searchtype.equals(BookSearchType.title)){
+                    bookJson = bookReviewService.searchBooksByTitle(query, page);
+                }
+                if(searchtype.equals(BookSearchType.author)){
+                    bookJson = bookReviewService.searchBooksByAuthor(query, page);
+                }
             }
-            if(type.equals(BookSearchType.author)){
-                bookJson = bookReviewService.searchBooksByAuthor(query, page);
+            if(booktype.equals(BookType.indep)){
+                if(searchtype.equals(BookSearchType.title)){
+                    AddIsEndBookResponse addIsEndBookResponse = indepBookService.getIndepBookByBooktitle(query, page);
+                    if(addIsEndBookResponse.getBookData().isEmpty()){
+                        return ResponseEntity.status(404).body(
+                                ErrorResponse.builder()
+                                        .status(404)
+                                        .message("E02: 해당되는 도서를 찾을 수 없습니다.")
+                                        .detail("E02")
+                                        .build()
+                        );
+                    }
+                    return ResponseEntity.ok(
+                            SuccessResponse.builder()
+                                    .status(200)
+                                    .data(addIsEndBookResponse)
+                                    .message("독립출판물 검색 성공")
+                            .build()
+                    );
+                }
+//                if(searchtype.equals(BookSearchType.author)){
+//
+//                }
             }
+
             if(bookJson == null){
                 return ResponseEntity.noContent().build();
             }
