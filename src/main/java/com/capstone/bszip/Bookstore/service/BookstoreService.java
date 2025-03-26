@@ -3,6 +3,7 @@ package com.capstone.bszip.Bookstore.service;
 import com.capstone.bszip.Bookstore.domain.Bookstore;
 import com.capstone.bszip.Bookstore.domain.BookstoreCategory;
 import com.capstone.bszip.Bookstore.repository.BookstoreRepository;
+import com.capstone.bszip.Bookstore.service.dto.BookstoreDetailResponse;
 import com.capstone.bszip.Bookstore.service.dto.BookstoreResponse;
 import com.capstone.bszip.Member.domain.Member;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -109,4 +112,37 @@ public class BookstoreService {
                     .collect(Collectors.toList());
         }
     }
+
+    public BookstoreDetailResponse getBookstoreDetail(Member member, Long bookstoreId){
+        Optional<Bookstore> bs = bookstoreRepository.findById(bookstoreId);
+
+        if (bs.isEmpty()) {
+            return null;
+        }
+        Bookstore bookstore = bs.get(); // 값이 있는 경우만 접근
+
+
+        boolean isLiked;
+        if(member != null){
+            isLiked = checkIfBookstoreLiked(member.getMemberId(),bookstore.getBookstoreId());
+        }else{ //로그인 안한 사용자
+            isLiked = false;
+        }
+        String modKeyword=bookstore.getKeyword();
+        if(modKeyword.equals(" 일반")){
+            modKeyword =" 일반서적";
+        }
+        return new BookstoreDetailResponse(
+                bookstore.getBookstoreId(),
+                bookstore.getName(),
+                bookstore.getPhone(),
+                bookstore.getHours(),
+                bookstore.getRating(),
+                modKeyword,
+                bookstore.getAddress().substring(8),
+                bookstore.getDescription(),
+                isLiked
+        );
+    }
+
 }

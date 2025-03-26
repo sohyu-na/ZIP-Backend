@@ -3,6 +3,7 @@ package com.capstone.bszip.Bookstore.controller;
 import com.capstone.bszip.Bookstore.domain.Bookstore;
 import com.capstone.bszip.Bookstore.domain.BookstoreCategory;
 import com.capstone.bszip.Bookstore.service.BookstoreService;
+import com.capstone.bszip.Bookstore.service.dto.BookstoreDetailResponse;
 import com.capstone.bszip.Bookstore.service.dto.BookstoreResponse;
 import com.capstone.bszip.Member.domain.Member;
 import com.capstone.bszip.commonDto.ErrorResponse;
@@ -227,5 +228,21 @@ public class BookstoreController {
                             .detail(e.getMessage())
                             .build());
         }
+    }
+
+    @GetMapping("/{bookstoreId}")
+    public ResponseEntity<?> getBookstoreDetail(@PathVariable Long bookstoreId,
+                                          @AuthenticationPrincipal Member member){
+
+            BookstoreDetailResponse bookstoreDetail = bookstoreService.getBookstoreDetail(member,bookstoreId);
+
+            return ResponseEntity.ok(SuccessResponse.<BookstoreDetailResponse> builder()
+                    .result(true)
+                    .status(HttpStatus.OK.value())
+                    .message("서점 상세 정보")
+                    .data(bookstoreDetail)
+                    .build());
+
+
     }
 }
