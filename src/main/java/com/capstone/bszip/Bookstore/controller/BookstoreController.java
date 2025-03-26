@@ -52,7 +52,7 @@ public class BookstoreController {
                                               @RequestParam double lat, @RequestParam double lng) {
         try {
             List<BookstoreResponse> bookstores = bookstoreService.searchBookstores(keyword,member,lat,lng);
-            if (bookstores.isEmpty()) {
+            /*if (bookstores.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ErrorResponse.builder()
                                 .result(false)
@@ -60,7 +60,7 @@ public class BookstoreController {
                                 .message("검색 결과가 없습니다.")
                                 .detail(keyword+" 에 해당하는 서점이 없습니다.")
                                 .build());
-            }
+            }*/
             return ResponseEntity.ok(SuccessResponse.<List<BookstoreResponse>>builder()
                     .result(true)
                     .status(HttpStatus.OK.value())
