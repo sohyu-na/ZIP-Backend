@@ -136,7 +136,7 @@ public class BookstoreController {
 
     @Operation(
             summary = "서점 찜하기/찜 취소",
-            description = "특정 서점에 대해 찜하기 또는 찜 취소를 수행합니다."
+            description = "[로그인 필수] 특정 서점에 대해 찜하기 또는 찜 취소를 수행합니다."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "성공적으로 찜하기/찜 취소 수행"),
@@ -185,7 +185,7 @@ public class BookstoreController {
 
     @Operation(
             summary = "찜한 서점 목록 조회",
-            description = "현재 로그인한 사용자가 찜한 서점 목록을 반환합니다."
+            description = "[로그인 필수] 사용자가 찜한 서점 목록을 반환합니다."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "성공적으로 찜한 서점 목록 반환"),
@@ -233,7 +233,16 @@ public class BookstoreController {
                             .build());
         }
     }
-
+    @Operation(
+            summary = "서점 상세 조회",
+            description = "특정 서점의 상세 정보 및 리뷰 목록을 조회합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "서점 상세 정보 및 리뷰 조회 성공",
+                    content = @Content(schema = @Schema(implementation = BookstoreDetailWithReviews.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류 발생",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @GetMapping("/{bookstoreId}")
     public ResponseEntity<?> getBookstoreDetail(@PathVariable Long bookstoreId,
                                                 @AuthenticationPrincipal Member member){
@@ -244,9 +253,26 @@ public class BookstoreController {
             return ResponseEntity.ok(SuccessResponse.<BookstoreDetailWithReviews>builder()
                     .result(true)
                     .status(HttpStatus.OK.value())
-                    .message("서점 상세 정보")
-                    .data(bookstoreDetail)
+                    .message("서점 상세 정보 및 리뷰 조회 성공")
+                    .data(new BookstoreDetailWithReviews(bookstoreDetail,reviewList))
                     .build());
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ErrorResponse.builder()
+                            .result(false)
+                            .status(HttpStatus.NOT_FOUND.value())
+                            .message("서점 id 오류")
+                            .detail(e.getMessage())
+                            .build());
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ErrorResponse.builder()
+                            .result(false)
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .message("서버 오류가 발생했습니다.")
+                            .detail(e.getMessage())
+                            .build());
+        }
 
 
     }

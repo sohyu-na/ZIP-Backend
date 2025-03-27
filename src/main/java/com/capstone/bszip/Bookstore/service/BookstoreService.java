@@ -6,6 +6,7 @@ import com.capstone.bszip.Bookstore.repository.BookstoreRepository;
 import com.capstone.bszip.Bookstore.service.dto.BookstoreDetailResponse;
 import com.capstone.bszip.Bookstore.service.dto.BookstoreResponse;
 import com.capstone.bszip.Member.domain.Member;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -114,13 +115,8 @@ public class BookstoreService {
     }
 
     public BookstoreDetailResponse getBookstoreDetail(Member member, Long bookstoreId){
-        Optional<Bookstore> bs = bookstoreRepository.findById(bookstoreId);
-
-        if (bs.isEmpty()) {
-            return null;
-        }
-        Bookstore bookstore = bs.get(); // 값이 있는 경우만 접근
-
+        Bookstore bookstore = bookstoreRepository.findById(bookstoreId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 서점을 찾을 수 없습니다."));
 
         boolean isLiked;
         if(member != null){
