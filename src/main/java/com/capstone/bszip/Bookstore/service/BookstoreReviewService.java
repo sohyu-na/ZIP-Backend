@@ -44,4 +44,21 @@ public class BookstoreReviewService {
                 review.getCreatedAt()
         );
     }
+    public List<BookstoreReviewResponse> getReviewsByBookstoreId(Long bookstoreId){
+        List<BookstoreReview> reviews = bookstoreReviewRepository.findReviewsByBookstoreIdOrderByCreatedAtDesc(bookstoreId);
+        return reviews.stream()
+                .map(this::convertToBookstoreResponse)
+                .collect(Collectors.toList());
+    }
+    private BookstoreReviewResponse convertToBookstoreResponse(BookstoreReview review) {
+
+        return new BookstoreReviewResponse(
+                review.getBookstoreReviewId(),
+                review.getMember().getNickname(),
+                review.getRating(),
+                review.getText(),
+                review.getImageUrl(),
+                review.getCreatedAt()
+        );
+    }
 }

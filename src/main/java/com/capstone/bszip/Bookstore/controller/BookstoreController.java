@@ -2,9 +2,12 @@ package com.capstone.bszip.Bookstore.controller;
 
 import com.capstone.bszip.Bookstore.domain.Bookstore;
 import com.capstone.bszip.Bookstore.domain.BookstoreCategory;
+import com.capstone.bszip.Bookstore.service.BookstoreReviewService;
 import com.capstone.bszip.Bookstore.service.BookstoreService;
 import com.capstone.bszip.Bookstore.service.dto.BookstoreDetailResponse;
+import com.capstone.bszip.Bookstore.service.dto.BookstoreDetailWithReviews;
 import com.capstone.bszip.Bookstore.service.dto.BookstoreResponse;
+import com.capstone.bszip.Bookstore.service.dto.BookstoreReviewResponse;
 import com.capstone.bszip.Member.domain.Member;
 import com.capstone.bszip.commonDto.ErrorResponse;
 import com.capstone.bszip.commonDto.SuccessResponse;
@@ -35,6 +38,7 @@ import java.util.Map;
 public class BookstoreController {
 
     private final BookstoreService bookstoreService;
+    private final BookstoreReviewService bookstoreReviewService;
 
     @Operation(summary = "서점 검색", description = "검색창에서 서점을 이름,주소로 검색합니다.")
     @ApiResponses(value = {
@@ -232,11 +236,12 @@ public class BookstoreController {
 
     @GetMapping("/{bookstoreId}")
     public ResponseEntity<?> getBookstoreDetail(@PathVariable Long bookstoreId,
-                                          @AuthenticationPrincipal Member member){
+                                                @AuthenticationPrincipal Member member){
+        try {
+            BookstoreDetailResponse bookstoreDetail = bookstoreService.getBookstoreDetail(member, bookstoreId);
+            List<BookstoreReviewResponse> reviewList = bookstoreReviewService.getReviewsByBookstoreId(bookstoreId);
 
-            BookstoreDetailResponse bookstoreDetail = bookstoreService.getBookstoreDetail(member,bookstoreId);
-
-            return ResponseEntity.ok(SuccessResponse.<BookstoreDetailResponse> builder()
+            return ResponseEntity.ok(SuccessResponse.<BookstoreDetailWithReviews>builder()
                     .result(true)
                     .status(HttpStatus.OK.value())
                     .message("서점 상세 정보")
