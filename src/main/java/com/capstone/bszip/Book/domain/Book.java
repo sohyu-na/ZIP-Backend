@@ -22,6 +22,9 @@ public class Book {
     @Column(name = "book_id")
     private Long bookId;
 
+    @Column(name = "isbn")
+    private Long isbn;
+
     @Column(name = "book_name", nullable = false)
     private String bookName;
 
@@ -51,12 +54,4 @@ public class Book {
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookstoreBook> bookstoreBookList = new ArrayList<>();
 
-    public Book(Long bookId, String bookName, String publisher, List<String> authors, String bookImageUrl, String content) {
-        this.bookId = bookId;
-        this.bookName = bookName;
-        this.publisher = publisher;
-        this.authors = authors;
-        this.bookImageUrl = bookImageUrl;
-        this.content = content;
-    }
 }
