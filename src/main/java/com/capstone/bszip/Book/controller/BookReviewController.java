@@ -119,9 +119,25 @@ public class BookReviewController {
                             .build()
                     );
                 }
-//                if(searchtype.equals(BookSearchType.author)){
-//
-//                }
+                if(searchtype.equals(BookSearchType.author)){
+                    AddIsEndBookResponse addIsEndBookResponse = indepBookService.getIndepBookByAuthor(query, page);
+                    if(addIsEndBookResponse.getBookData().isEmpty()){
+                        return ResponseEntity.status(404).body(
+                                ErrorResponse.builder()
+                                        .status(404)
+                                        .message("E02: 해당되는 도서를 찾을 수 없습니다.")
+                                        .detail("E02")
+                                        .build()
+                        );
+                    }
+                    return ResponseEntity.ok(
+                            SuccessResponse.builder()
+                                    .status(200)
+                                    .data(addIsEndBookResponse)
+                                    .message("독립출판물 검색 성공")
+                                    .build()
+                    );
+                }
             }
 
             if(bookJson == null){
@@ -251,6 +267,7 @@ public class BookReviewController {
     @PostMapping(value = "/indep-book",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
     @Operation(summary = "독립출판물과 리뷰 동시에 등록", description = "thumnail 이미지와 책 이름, 작가문자열, 별점, 책에 대한 리뷰 텍스트를 받아와서 책과 책 리뷰를 등록합니다.")
     public ResponseEntity<?> createIndepBookAndReview(@RequestPart(value = "thumbnail", required = false)
                                                           @Parameter(description = "책 썸네일 이미지")  MultipartFile image,

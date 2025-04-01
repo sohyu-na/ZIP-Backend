@@ -32,4 +32,19 @@ public class IndepBookService {
                 );
         return new AddIsEndBookResponse(indepBooks.isLast(), indepBooks.getContent());
     }
+
+    public AddIsEndBookResponse getIndepBookByAuthor(String author, int page){
+        Pageable pageable = PageRequest.of(page - 1, 10);
+        Page<BookSearchResponse.IndepBook> indepBooks = bookRepository.findByAuthorsContainingAndBookType(author, BookType.indep, pageable)
+                .map(indepBook -> {
+                    return BookSearchResponse.IndepBook.builder()
+                            .bookId(indepBook.getBookId())
+                            .bookImageUrl(indepBook.getBookImageUrl())
+                            .authors(indepBook.getAuthors())
+                            .title(indepBook.getBookName())
+                            .build();}
+
+                );
+        return new AddIsEndBookResponse(indepBooks.isLast(), indepBooks.getContent());
+    }
 }

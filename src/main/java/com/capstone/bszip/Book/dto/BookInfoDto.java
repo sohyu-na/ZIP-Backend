@@ -14,4 +14,5 @@ public class BookInfoDto {
     private List<String> authors;
     private String publisher;
     private List<?> bookStores;
+    private BookType bookType;
 }

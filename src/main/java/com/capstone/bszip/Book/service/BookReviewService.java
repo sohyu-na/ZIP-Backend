@@ -351,6 +351,7 @@ public class BookReviewService {
                     BookInfoDto bookInfoDto = BookInfoDto.builder()
                             .bookId(book.getBookId().toString())
                             .title(book.getBookName())
+                            .bookType(book.getBookType())
                             .bookImageUrl(book.getBookImageUrl())
                             .authors(book.getAuthors())
                             .bookStores(bookStoreDtos)
@@ -440,6 +441,7 @@ public class BookReviewService {
                             .bookImageUrl(book.getBookImageUrl())
                             .authors(book.getAuthors())
                             .bookStores(bookStoreDtos)
+                            .bookType(book.getBookType())
                             .publisher(book.getPublisher())
                             .build();
 

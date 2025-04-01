@@ -31,7 +31,9 @@ public class Book {
     @Column(name = "publisher", nullable = true)
     private String publisher;
 
-    @Column(name = "author", nullable = false)
+    @Column(name = "author", nullable = true)
+    @ElementCollection
+    @CollectionTable(name = "book_authors", joinColumns = @JoinColumn(name = "book_id"))
     private List<String> authors = new ArrayList<>();
 
     @Column(name = "book_image_url", nullable = true)
