@@ -31,4 +31,14 @@ public class BookSearchResponse {
     @Schema(description = "책 표지 url")
     private String bookImageUrl;
 
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class IndepBook{
+        private Long bookId;
+        private String title;
+        private List<String> authors;
+        private String bookImageUrl;
+    }
+
 }

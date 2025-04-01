@@ -20,14 +20,12 @@ public class IndepBookService {
 
     public AddIsEndBookResponse getIndepBookByBooktitle(String title, int page){
         Pageable pageable = PageRequest.of(page - 1, 10);
-        Page<?> s = bookRepository.findByBookNameContainingAndBookType(title, BookType.indep, pageable);
-        log.info(s.getTotalElements() + " books found");
-        Page<BookSearchResponse> indepBooks = bookRepository.findByBookNameContainingAndBookType(title, BookType.indep, pageable)
+        Page<BookSearchResponse.IndepBook> indepBooks = bookRepository.findByBookNameContainingAndBookType(title, BookType.indep, pageable)
                 .map(indepBook -> {
-                    return BookSearchResponse.builder()
-                        .isbn(indepBook.getBookId().toString())
+                    return BookSearchResponse.IndepBook.builder()
+                        .bookId(indepBook.getBookId())
                         .bookImageUrl(indepBook.getBookImageUrl())
-                        //.authors(indepBook.getAuthors())
+                        .authors(indepBook.getAuthors())
                         .title(indepBook.getBookName())
                         .build();}
 

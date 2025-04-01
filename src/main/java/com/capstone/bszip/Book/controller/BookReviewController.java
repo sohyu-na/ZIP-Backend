@@ -152,9 +152,11 @@ public class BookReviewController {
     /*
     * 리뷰 작성 api
     * - 책 ID, 별점, 리뷰 받아서 저장*/
-    @Operation(summary = "책 한 줄 리뷰 등록", description = "isbn, 리뷰 텍스트, 별점을 보내면 책을 저장하고 리뷰를 저장합니다. 예시 응답은 제목과 동일합니다.")
+    @Operation(summary = "책 한 줄 리뷰 등록", description = "쿼리 파라미터에 따라서 request body가 다릅니다. 아래의 request body는 booktype이 normal일 때고, booktype이 indep일 때는 https://turquoise-dill-eee.notion.site/1c82ab1fb8c9807293a6e760423e5f63?pvs=4 여기서 확인 하삼")
     @PostMapping("/new-review")
-    public ResponseEntity<?> writeBookReview(@AuthenticationPrincipal Member member, @RequestBody BookReviewRequest.ReviewCreate bookReviewRequest, @RequestParam BookType booktype) {
+    public ResponseEntity<?> writeBookReview(@AuthenticationPrincipal Member member,
+                                             @RequestBody BookReviewRequest.ReviewCreate request,
+                                             @RequestParam BookType booktype) {
         try{
             if(member == null){
                 return ResponseEntity.status(401).body(
@@ -165,10 +167,15 @@ public class BookReviewController {
                                 .build()
                 );
             }
+
             Book book = null;
+            String reviewText = null;
+            int rating = 0;
             // booktype이 normal일 때 - isbn을 가지고 등록해야 함
             if(booktype.equals(BookType.normal)){
-                Long isbn = bookReviewRequest.getIsbn();
+                Long isbn = request.getIsbn();
+                reviewText = request.getReviewText();
+                rating = request.getRating();
                 if(!bookReviewService.existsByIsbn(isbn)){
                     String bookJson = bookReviewService.searchBookByIsbn(isbn);
                     bookReviewService.saveBookByKakaoSearch(bookJson);
@@ -178,9 +185,11 @@ public class BookReviewController {
 
             // booktype이 indep일 때 - book id를 가지고 등록해야 함
             if(booktype.equals(BookType.indep)){
-                Long bookId = bookReviewRequest.getBookId();
+                Long bookId = request.getBookId();
+                reviewText = request.getReviewText();
+                rating = request.getRating();
                 book = bookReviewService.findBookByBookId(bookId);
-                List<Long> bookstoreIds = bookReviewRequest.getBookstoreIds();
+                List<Long> bookstoreIds = request.getBookstoreIds();
                 if(bookstoreIds != null && !bookstoreIds.isEmpty()){
                     // 서비스에서 bookstoreId랑 book을 이용해서 bookstoreBook에 저장하는 로직 - bookstoreBook에서 해당 책에 이미 서점이 있으면 409 에러 코드 주기
                     bookReviewService.registerBookInBookstores(book, bookstoreIds);
@@ -189,10 +198,10 @@ public class BookReviewController {
 
             bookReviewService.saveBookReview(
                     BookReview.builder()
-                            .bookReviewText(bookReviewRequest.getReviewText())
+                            .bookReviewText(reviewText)
                             .book(book)
                             .member(member)
-                            .bookRating(bookReviewRequest.getRating())
+                            .bookRating(rating)
                             .build()
             );
             return ResponseEntity.ok(

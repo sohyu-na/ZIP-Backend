@@ -333,12 +333,27 @@ public class BookReviewService {
                         isLiked = bookReviewLikesRepository.existsBookReviewLikesByBookReviewAndMember(bookReview, member);
                     }
                     Book book = bookReview.getBook();
+                    List<BookStoreDto> bookStoreDtos = null;
+                    if(book.getBookType().equals(BookType.indep) && !book.getBookstoreBookList().isEmpty()){
+                        bookStoreDtos = book.getBookstoreBookList().stream().map(bookstoreBook ->
+                                {
+                                    Bookstore bookstore = bookstoreBook.getBookstore();
+                                    String bookStoreName = bookstore.getName();
+                                    Long bookStoreId = bookstore.getBookstoreId();
+                                    return BookStoreDto.builder()
+                                            .bookStoreId(bookStoreId)
+                                            .bookStoreName(bookStoreName)
+                                            .build();
+                                }
+                        ).toList();;
+                    }
                     boolean isLikes = bookReviewLikesRepository.existsBookReviewLikesByBookReviewAndMember(bookReview, member);
                     BookInfoDto bookInfoDto = BookInfoDto.builder()
-                            .isbn(book.getBookId().toString())
+                            .bookId(book.getBookId().toString())
                             .title(book.getBookName())
                             .bookImageUrl(book.getBookImageUrl())
                             .authors(book.getAuthors())
+                            .bookStores(bookStoreDtos)
                             .publisher(book.getPublisher())
                             .build();
 
@@ -405,11 +420,26 @@ public class BookReviewService {
                         isLiked = bookReviewLikesRepository.existsBookReviewLikesByBookReviewAndMember(bookReview, member);
                     }
                     Book book = bookReview.getBook();
+                    List<BookStoreDto> bookStoreDtos = null;
+                    if(book.getBookType().equals(BookType.indep) && !book.getBookstoreBookList().isEmpty()){
+                        bookStoreDtos = book.getBookstoreBookList().stream().map(bookstoreBook ->
+                                {
+                                    Bookstore bookstore = bookstoreBook.getBookstore();
+                                    String bookStoreName = bookstore.getName();
+                                    Long bookStoreId = bookstore.getBookstoreId();
+                                    return BookStoreDto.builder()
+                                            .bookStoreId(bookStoreId)
+                                            .bookStoreName(bookStoreName)
+                                            .build();
+                                }
+                                ).toList();;
+                    }
                     BookInfoDto bookInfoDto = BookInfoDto.builder()
-                            .isbn(book.getBookId().toString())
+                            .bookId(book.getBookId().toString())
                             .title(book.getBookName())
                             .bookImageUrl(book.getBookImageUrl())
                             .authors(book.getAuthors())
+                            .bookStores(bookStoreDtos)
                             .publisher(book.getPublisher())
                             .build();
 
