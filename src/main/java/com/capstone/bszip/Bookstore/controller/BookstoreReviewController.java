@@ -7,6 +7,7 @@ import com.capstone.bszip.Member.domain.Member;
 import com.capstone.bszip.commonDto.ErrorResponse;
 import com.capstone.bszip.commonDto.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -15,13 +16,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
@@ -43,10 +43,14 @@ public class BookstoreReviewController {
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    @PostMapping
+    @PostMapping(
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public ResponseEntity<?> createReview(
             @AuthenticationPrincipal Member member,
-            @RequestBody BookstoreReviewRequest request
+            @RequestPart(value = "thumbnail", required = false) @Parameter(description = "서점 리뷰 이미지") MultipartFile image,
+            @RequestPart("review") BookstoreReviewRequest request
             ) {
         if (member == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -58,7 +62,7 @@ public class BookstoreReviewController {
                             .build());
         }
         try {
-            BookstoreReviewResponse response = bookstoreReviewService.createReview(member, request);
+            BookstoreReviewResponse response = bookstoreReviewService.createReview(member, request,image);
             return ResponseEntity.ok(SuccessResponse.<BookstoreReviewResponse>builder()
                     .result(true)
                     .status(HttpStatus.CREATED.value())
