@@ -49,7 +49,7 @@ public class BookstoreReviewController {
     )
     public ResponseEntity<?> createReview(
             @AuthenticationPrincipal Member member,
-            @RequestPart(value = "thumbnail", required = false) @Parameter(description = "서점 리뷰 이미지") MultipartFile image,
+            @RequestPart(value = "review_img", required = false) @Parameter(description = "서점 리뷰 이미지") MultipartFile image,
             @RequestPart("review") BookstoreReviewRequest request
             ) {
         if (member == null) {
