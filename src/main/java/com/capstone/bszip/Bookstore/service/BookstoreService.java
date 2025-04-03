@@ -128,10 +128,28 @@ public class BookstoreService {
         if(modKeyword.equals(" 일반")){
             modKeyword =" 일반서적";
         }
+        String phone = bookstore.getPhone();
+        if (phone != null) {
+            String phone1, phone2, phone3;
+            if (phone.startsWith("02")) {//서울
+                phone1 = phone.substring(0, 2);
+                phone2 = phone.substring(2, phone.length() - 4);
+                phone3 = phone.substring(phone.length() - 4);
+            }else if (phone.startsWith("0507")) { //안심번호
+                phone1 = phone.substring(0, 4);
+                phone2 = phone.substring(4, phone.length() - 4);
+                phone3 = phone.substring(phone.length() - 4);
+            }else {
+                phone1 = phone.substring(0, 3);
+                phone2 = phone.substring(3, phone.length() - 4);
+                phone3 = phone.substring(phone.length() - 4);
+            }
+            phone = phone1 + "-" + phone2 + "-" + phone3;
+        }
         return new BookstoreDetailResponse(
                 bookstore.getBookstoreId(),
                 bookstore.getName(),
-                bookstore.getPhone(),
+                phone,
                 bookstore.getHours(),
                 bookstore.getRating(),
                 modKeyword,
