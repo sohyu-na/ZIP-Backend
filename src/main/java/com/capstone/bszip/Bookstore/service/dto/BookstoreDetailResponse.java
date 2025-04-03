@@ -11,7 +11,7 @@ public class BookstoreDetailResponse {
     private Long bookstoreId;
     private String name;
     private String phone;
-    private String hours;
+    private Hours hours;
     private double rating;
     private String keyword;
     private String address;
