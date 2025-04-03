@@ -14,5 +14,4 @@ public class BookstoreReviewRequest {
     @Min(1) @Max(5)
     private int rating;
     private String text;
-    private String imageUrl;
 }
