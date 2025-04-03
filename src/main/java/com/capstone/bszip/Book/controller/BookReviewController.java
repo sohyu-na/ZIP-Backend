@@ -493,4 +493,31 @@ public class BookReviewController {
         }
     }
 
+    @Operation(summary = "서점 검색", description = "query 없으면 10개 서점 주고 아니면 서점 아이디랑 이름 줌")
+    @ApiResponse(responseCode = "200", description = "성공",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = BookStoreDto.class)))
+    @GetMapping("/bookstore")
+    public ResponseEntity<?> searchBookstore(@RequestParam(name="query", required = false) String query){
+        try{
+            return ResponseEntity.ok(
+                    SuccessResponse.builder()
+                            .result(true)
+                            .status(HttpServletResponse.SC_OK)
+                            .message("서점 검색 성공")
+                            .data(indepBookService.getBookstoreIdAndName(query))
+                            .build()
+            );
+        }catch (Exception e){
+            return ResponseEntity.status(500).body(
+                    ErrorResponse.builder()
+                            .result(false)
+                            .status(500)
+                            .message("서점 검색 실패")
+                            .detail(e.getMessage())
+                            .build()
+            );
+        }
+    }
+
 }

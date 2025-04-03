@@ -338,12 +338,7 @@ public class BookReviewService {
                         bookStoreDtos = book.getBookstoreBookList().stream().map(bookstoreBook ->
                                 {
                                     Bookstore bookstore = bookstoreBook.getBookstore();
-                                    String bookStoreName = bookstore.getName();
-                                    Long bookStoreId = bookstore.getBookstoreId();
-                                    return BookStoreDto.builder()
-                                            .bookStoreId(bookStoreId)
-                                            .bookStoreName(bookStoreName)
-                                            .build();
+                                    return BookStoreDto.from(bookstore);
                                 }
                         ).toList();;
                     }
@@ -426,12 +421,7 @@ public class BookReviewService {
                         bookStoreDtos = book.getBookstoreBookList().stream().map(bookstoreBook ->
                                 {
                                     Bookstore bookstore = bookstoreBook.getBookstore();
-                                    String bookStoreName = bookstore.getName();
-                                    Long bookStoreId = bookstore.getBookstoreId();
-                                    return BookStoreDto.builder()
-                                            .bookStoreId(bookStoreId)
-                                            .bookStoreName(bookStoreName)
-                                            .build();
+                                    return BookStoreDto.from(bookstore);
                                 }
                                 ).toList();;
                     }
