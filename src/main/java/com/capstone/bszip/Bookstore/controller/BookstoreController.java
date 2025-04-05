@@ -1,18 +1,18 @@
 package com.capstone.bszip.Bookstore.controller;
 
+import com.capstone.bszip.Book.dto.BookSearchResponse;
+import com.capstone.bszip.Book.service.IndepBookService;
 import com.capstone.bszip.Bookstore.domain.Bookstore;
 import com.capstone.bszip.Bookstore.domain.BookstoreCategory;
 import com.capstone.bszip.Bookstore.service.BookstoreReviewService;
 import com.capstone.bszip.Bookstore.service.BookstoreService;
-import com.capstone.bszip.Bookstore.service.dto.BookstoreDetailResponse;
-import com.capstone.bszip.Bookstore.service.dto.BookstoreDetailWithReviews;
-import com.capstone.bszip.Bookstore.service.dto.BookstoreResponse;
-import com.capstone.bszip.Bookstore.service.dto.BookstoreReviewResponse;
+import com.capstone.bszip.Bookstore.service.dto.*;
 import com.capstone.bszip.Member.domain.Member;
 import com.capstone.bszip.commonDto.ErrorResponse;
 import com.capstone.bszip.commonDto.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -39,6 +39,7 @@ public class BookstoreController {
 
     private final BookstoreService bookstoreService;
     private final BookstoreReviewService bookstoreReviewService;
+    private final IndepBookService indepBookService;
 
     @Operation(summary = "서점 검색", description = "검색창에서 서점을 이름,주소로 검색합니다.")
     @ApiResponses(value = {
@@ -56,7 +57,7 @@ public class BookstoreController {
                                               @AuthenticationPrincipal Member member,
                                               @RequestParam double lat, @RequestParam double lng) {
         try {
-            List<BookstoreResponse> bookstores = bookstoreService.searchBookstores(keyword,member,lat,lng);
+            List<BookstoreResponse> bookstores = bookstoreService.searchBookstores(keyword, member, lat, lng);
             /*if (bookstores.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ErrorResponse.builder()
@@ -69,7 +70,7 @@ public class BookstoreController {
             return ResponseEntity.ok(SuccessResponse.<List<BookstoreResponse>>builder()
                     .result(true)
                     .status(HttpStatus.OK.value())
-                    .message(keyword+" - 서점 검색 성공")
+                    .message(keyword + " - 서점 검색 성공")
                     .data(bookstores)
                     .build());
         } catch (IllegalArgumentException e) {
@@ -106,9 +107,9 @@ public class BookstoreController {
     public ResponseEntity<?> getBookstoresByCategory(
             @Parameter(description = "조회할 서점 카테고리") @RequestParam(required = false) BookstoreCategory category,
             @AuthenticationPrincipal Member member,
-            @RequestParam double lat, @RequestParam double lng){
-        try{
-            List<BookstoreResponse> bookstores = bookstoreService.getBookstoresByCategory(category,member,lat,lng);
+            @RequestParam double lat, @RequestParam double lng) {
+        try {
+            List<BookstoreResponse> bookstores = bookstoreService.getBookstoresByCategory(category, member, lat, lng);
             return ResponseEntity.ok(SuccessResponse.<List<BookstoreResponse>>builder()
                     .result(true)
                     .status(HttpStatus.OK.value())
@@ -146,7 +147,7 @@ public class BookstoreController {
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @PostMapping("/{bookstoreId}/toggle-like")
-    public ResponseEntity<?> toggleLikeBookstore(@PathVariable Long bookstoreId, @AuthenticationPrincipal Member member){
+    public ResponseEntity<?> toggleLikeBookstore(@PathVariable Long bookstoreId, @AuthenticationPrincipal Member member) {
         try {
             if (member == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -162,7 +163,7 @@ public class BookstoreController {
             return ResponseEntity.ok(SuccessResponse.<Void>builder()
                     .result(true)
                     .status(HttpStatus.OK.value())
-                    .message("서점 찜하기/찜 취소 성공 - 사용자: "+memberId+" 서점: "+bookstoreId)
+                    .message("서점 찜하기/찜 취소 성공 - 사용자: " + memberId + " 서점: " + bookstoreId)
                     .build());
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -209,9 +210,9 @@ public class BookstoreController {
                             .detail("로그인이 필요한 서비스입니다.")
                             .build());
         }
-        try{
+        try {
             List<BookstoreResponse> likedBookstores;
-            likedBookstores = bookstoreService.getLikedBookstoresByCategory(member, category,lat,lng);
+            likedBookstores = bookstoreService.getLikedBookstoresByCategory(member, category, lat, lng);
 
             Map<String, Object> responseData = new HashMap<>();
             responseData.put("totalCnt", likedBookstores.size());
@@ -233,29 +234,56 @@ public class BookstoreController {
                             .build());
         }
     }
+
     @Operation(
             summary = "서점 상세 조회",
-            description = "특정 서점의 상세 정보 및 리뷰 목록을 조회합니다."
+            description = "특정 서점의 상세 정보 및 리뷰 목록/보유 서적을 조회합니다."
     )
+    @Parameters({
+            @Parameter(name = "bookstoreId", description = "조회할 서점의 ID", required = true),
+            @Parameter(name = "type", description = "조회할 데이터 타입 (reviews: 리뷰 목록, books: 보유 서적 목록)",
+                    required = true, schema = @Schema(type = "string", allowableValues = {"reviews", "books"})),
+    })
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "서점 상세 정보 및 리뷰 조회 성공",
-                    content = @Content(schema = @Schema(implementation = BookstoreDetailWithReviews.class))),
+            @ApiResponse(responseCode = "200", description = "서점 상세 정보 및 리뷰/보유 서적 조회 성공",
+                    content = {@Content(schema = @Schema(oneOf = {
+                            BookstoreDetailWithReviews.class,
+                            BookstoreDetailWithBooks.class
+                    }))
+                    }),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "서점을 찾을 수 없음",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 오류 발생",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    @GetMapping("/{bookstoreId}")
-    public ResponseEntity<?> getBookstoreDetail(@PathVariable Long bookstoreId,
-                                                @AuthenticationPrincipal Member member){
+    @GetMapping("/{bookstoreId}/details")
+    public ResponseEntity<?> getBookstoreDetails(@PathVariable Long bookstoreId,
+                                                 @RequestParam String type,
+                                                 @AuthenticationPrincipal Member member) {
         try {
             BookstoreDetailResponse bookstoreDetail = bookstoreService.getBookstoreDetail(member, bookstoreId);
-            List<BookstoreReviewResponse> reviewList = bookstoreReviewService.getReviewsByBookstoreId(bookstoreId);
 
-            return ResponseEntity.ok(SuccessResponse.<BookstoreDetailWithReviews>builder()
-                    .result(true)
-                    .status(HttpStatus.OK.value())
-                    .message("서점 상세 정보 및 리뷰 조회 성공")
-                    .data(new BookstoreDetailWithReviews(bookstoreDetail,reviewList))
-                    .build());
+            if("reviews".equals(type)) {
+                List<BookstoreReviewResponse> reviewList = bookstoreReviewService.getReviewsByBookstoreId(bookstoreId);
+                return ResponseEntity.ok(SuccessResponse.<BookstoreDetailWithReviews>builder()
+                        .result(true)
+                        .status(HttpStatus.OK.value())
+                        .message("서점 상세 정보 및 리뷰 조회 성공")
+                        .data(new BookstoreDetailWithReviews(bookstoreDetail, reviewList))
+                        .build());
+            }else if("books".equals(type)) {
+                List<BookSearchResponse.IndepBook> bookList = indepBookService.getIndepBookByBookstore(bookstoreId);
+                return ResponseEntity.ok(SuccessResponse.<BookstoreDetailWithBooks>builder()
+                        .result(true)
+                        .status(HttpStatus.OK.value())
+                        .message("서점 상세 정보 및 보유 서적 조회 성공")
+                        .data(new BookstoreDetailWithBooks(bookstoreDetail, bookList))
+                        .build());
+            }else {
+                throw new IllegalArgumentException("Invalid type parameter");
+            }
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ErrorResponse.builder()
@@ -264,7 +292,7 @@ public class BookstoreController {
                             .message("서점 id 오류")
                             .detail(e.getMessage())
                             .build());
-        }catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ErrorResponse.builder()
                             .result(false)
@@ -273,7 +301,5 @@ public class BookstoreController {
                             .detail(e.getMessage())
                             .build());
         }
-
-
     }
 }
