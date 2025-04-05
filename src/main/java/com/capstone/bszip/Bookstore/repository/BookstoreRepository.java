@@ -36,4 +36,8 @@ public interface BookstoreRepository extends JpaRepository<Bookstore,Long> {
     List<Bookstore> findAllByIdOrderByDistance(@Param("bookstoreIds") List<Long> bookstoreIds,
                                                @Param("userLat") double userLat,
                                                @Param("userLng") double userLng);
+
+    List<Bookstore> findAllByNameContaining(String name);
+
+    List<Bookstore> findTop10ByOrderByBookstoreIdDesc();
 }
