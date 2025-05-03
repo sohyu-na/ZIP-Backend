@@ -17,4 +17,5 @@ public class BookstoreDetailResponse {
     private String address;
     private String description;
     private boolean liked;
+    private int likedCount;
 }
