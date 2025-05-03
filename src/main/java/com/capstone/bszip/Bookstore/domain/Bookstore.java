@@ -46,14 +46,19 @@ public class Bookstore {
     private String description;
 
     @Column(name="rating")
-    private Double rating;
+    private double rating;
+
+    @Column(name="ratingCount")
+    private int ratingCount;
 
     @Column(name="keyword")
     private String keyword;
 
-    // 별점만 변경하는 메서드
-    public Bookstore updateRating(double newRating) {
-        return this.toBuilder().rating(newRating).build();
+    // 리뷰 작성 -> 별점 업데이트
+    public void updateRating(double newRating) {
+        double totalRating = this.rating * this.ratingCount;
+        this.ratingCount++;
+        this.rating = (totalRating + newRating) / this.ratingCount;
     }
 
     @OneToMany(mappedBy = "bookstore", cascade = CascadeType.ALL, orphanRemoval = true)
