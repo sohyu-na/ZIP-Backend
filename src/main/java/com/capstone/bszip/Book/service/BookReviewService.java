@@ -511,7 +511,7 @@ public class BookReviewService {
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<ProfileUpdateRequest> httpEntity = new HttpEntity<>(profileUpdateRequest, httpHeaders);
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.postForEntity(embeddingURI+"/profile/update/"+member.getMemberId(), httpEntity, String.class);
+        restTemplate.postForEntity(embeddingURI+"/profile/update", httpEntity, String.class);
 
     }
 }
