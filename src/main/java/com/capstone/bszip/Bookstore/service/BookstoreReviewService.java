@@ -10,6 +10,7 @@ import com.capstone.bszip.Member.domain.Member;
 import com.capstone.bszip.cloudinary.service.CloudinaryService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -49,8 +50,8 @@ public class BookstoreReviewService {
                 review.getCreatedAt()
         );
     }
-    public List<BookstoreReviewResponse> getReviewsByBookstoreId(Long bookstoreId){
-        List<BookstoreReview> reviews = bookstoreReviewRepository.findReviewsByBookstoreIdOrderByCreatedAtDesc(bookstoreId);
+    public List<BookstoreReviewResponse> getReviewsByBookstoreId(Long bookstoreId, Sort sort){
+        List<BookstoreReview> reviews = bookstoreReviewRepository.findReviewsByBookstoreId(bookstoreId,sort);
         return reviews.stream()
                 .map(this::convertToBookstoreResponse)
                 .collect(Collectors.toList());
