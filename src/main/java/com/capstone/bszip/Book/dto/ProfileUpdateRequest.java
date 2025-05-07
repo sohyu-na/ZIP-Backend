@@ -11,13 +11,13 @@ import lombok.Getter;
 public class ProfileUpdateRequest {
     @JsonProperty("user_id")
     String userId;
-    @JsonProperty("user_name")
+    @JsonProperty("userName")
     String userName;
     @JsonProperty("title")
     String title;
     @JsonProperty("rating")
     int rating;
-    @JsonProperty("review_text")
+    @JsonProperty("reviewText")
     String reviewText;
 
     public static ProfileUpdateRequest fromEntity(Member member, String bookTitle, BookReview review){
