@@ -24,10 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,6 +53,9 @@ public class BookReviewService {
     private String kakaoApiKey;
     private static final String BOOK_REVIEW_LIKES_KEY = "book_review_likes:";
     private static final String LAST7DAYS_BOOK_REVIEW_LIKES_KEY = "last7days_book_review_likes:";
+    @Value("${ai.uri}")
+    private  String embeddingURI;
+
 
     public BookReviewService(BookRepository bookRepository,
                              ObjectMapper objectMapper,
@@ -227,6 +227,7 @@ public class BookReviewService {
         }
     }
     // 검색된 결과로 book 객체 만들고 저장
+    @Transactional
     public void saveBookByKakaoSearch(String bookJson){
         try{
             ObjectMapper objectMapper = new ObjectMapper();
@@ -255,6 +256,7 @@ public class BookReviewService {
                     .bookType(BookType.normal)
                     .build();
             bookRepository.save(book);
+            storeEmbeddingBook(book);
 
         }catch (Exception e){
             throw new RuntimeException("북 객체 만들기 실패: "+e);
@@ -488,8 +490,28 @@ public class BookReviewService {
                 .build();
 
         bookRepository.save(book);
-            // 서점 저장
+        storeEmbeddingBook(book);
+        // 서점 저장
         return book;
-        }
+    }
+    @Transactional
+    public void storeEmbeddingBook(Book book) {
+        EmbeddingBookRequest embeddingBookRequest = EmbeddingBookRequest.fromEntity(book);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<EmbeddingBookRequest> httpEntity = new HttpEntity<>(embeddingBookRequest, httpHeaders);
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.postForEntity(embeddingURI+"/book/embedding", httpEntity, String.class);
+    }
 
+    @Transactional
+    public void updateUserProfileForRecommend(Member member, String bookTitle, BookReview bookReview) {
+        ProfileUpdateRequest profileUpdateRequest = ProfileUpdateRequest.fromEntity(member, bookTitle, bookReview);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<ProfileUpdateRequest> httpEntity = new HttpEntity<>(profileUpdateRequest, httpHeaders);
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.postForEntity(embeddingURI+"/profile/update"+member.getMemberId(), httpEntity, String.class);
+
+    }
 }

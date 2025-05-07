@@ -299,14 +299,14 @@ public class BookReviewController {
                 // 서비스에서 bookstoreId랑 book을 이용해서 bookstoreBook에 저장하는 로직 - bookstoreBook에서 해당 책에 이미 서점이 있으면 409 에러 코드 주기
                 bookReviewService.registerBookInBookstores(book, bookstoreIds);
             }
-            bookReviewService.saveBookReview(
-                    BookReview.builder()
-                            .bookReviewText(bookReviewRequest.getReviewText())
-                            .book(book)
-                            .member(member)
-                            .bookRating(bookReviewRequest.getRating())
-                            .build()
-            );
+            BookReview review = BookReview.builder()
+                    .bookReviewText(bookReviewRequest.getReviewText())
+                    .book(book)
+                    .member(member)
+                    .bookRating(bookReviewRequest.getRating())
+                    .build();
+            bookReviewService.saveBookReview(review);
+            bookReviewService.updateUserProfileForRecommend(member, book.getBookName(), review);
             return ResponseEntity.status(201).body("리뷰 생성 완료");
         }catch (Exception e){
             return ResponseEntity.status(500).body(
