@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ProfileUpdateRequest {
-    Long userId;
+    String userId;
     String userName;
     String title;
     int rating;
@@ -16,7 +16,7 @@ public class ProfileUpdateRequest {
 
     public static ProfileUpdateRequest fromEntity(Member member, String bookTitle, BookReview review){
         return ProfileUpdateRequest.builder()
-                .userId(member.getMemberId())
+                .userId(member.getMemberId().toString())
                 .userName(member.getNickname())
                 .title(bookTitle)
                 .rating(review.getBookRating())
