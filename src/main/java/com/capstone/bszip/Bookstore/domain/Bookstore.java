@@ -58,7 +58,9 @@ public class Bookstore {
     public void updateRating(double newRating) {
         double totalRating = this.rating * this.ratingCount;
         this.ratingCount++;
-        this.rating = (totalRating + newRating) / this.ratingCount;
+        double updatedRating = (totalRating + newRating) / this.ratingCount;
+        // 소수점 한 자리로 반올림
+        this.rating = Math.round(updatedRating * 10) / 10.0;
     }
 
     @OneToMany(mappedBy = "bookstore", cascade = CascadeType.ALL, orphanRemoval = true)
