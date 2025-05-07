@@ -9,11 +9,10 @@ import java.util.List;
 @Getter
 @Builder
 public class EmbeddingBookRequest {
-    Long bookId;
+    String bookId;
     String title;
     String bookImageUrl;
-    List<String> authors;
-    BookType bookType;
+    String bookType;
     String description;
 
     public static EmbeddingBookRequest fromEntity(Book book) {
@@ -22,10 +21,9 @@ public class EmbeddingBookRequest {
             content = "";
         }
         return EmbeddingBookRequest.builder()
-                .bookId(book.getBookId())
-                .authors(book.getAuthors())
+                .bookId(book.getBookId().toString())
                 .bookImageUrl(book.getBookImageUrl())
-                .bookType(book.getBookType())
+                .bookType(book.getBookType().toString())
                 .description(content)
                 .build();
     }
