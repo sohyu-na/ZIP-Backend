@@ -17,12 +17,16 @@ public class EmbeddingBookRequest {
     String description;
 
     public static EmbeddingBookRequest fromEntity(Book book) {
+        String content = book.getContent();
+        if(content == null || content.isEmpty()){
+            content = "";
+        }
         return EmbeddingBookRequest.builder()
                 .bookId(book.getBookId())
                 .authors(book.getAuthors())
                 .bookImageUrl(book.getBookImageUrl())
                 .bookType(book.getBookType())
-                .description(book.getContent())
+                .description(content)
                 .build();
     }
 }
