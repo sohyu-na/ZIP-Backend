@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -243,6 +244,8 @@ public class BookstoreController {
             @Parameter(name = "bookstoreId", description = "조회할 서점의 ID", required = true),
             @Parameter(name = "type", description = "조회할 데이터 타입 (reviews: 리뷰 목록, books: 보유 서적 목록)",
                     required = true, schema = @Schema(type = "string", allowableValues = {"reviews", "books"})),
+            @Parameter(name = "sortField", description = "정렬 타입 (createdAt: 최신순, rating: 별점순)",
+                    required = false, schema = @Schema(type = "string", allowableValues = {"createdAt", "rating"}))
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "서점 상세 정보 및 리뷰/보유 서적 조회 성공",
@@ -261,12 +264,14 @@ public class BookstoreController {
     @GetMapping("/{bookstoreId}/details")
     public ResponseEntity<?> getBookstoreDetails(@PathVariable Long bookstoreId,
                                                  @RequestParam String type,
+                                                 @RequestParam(required = false, defaultValue = "createdAt") String sortField,
                                                  @AuthenticationPrincipal Member member) {
         try {
             BookstoreDetailResponse bookstoreDetail = bookstoreService.getBookstoreDetail(member, bookstoreId);
 
             if("reviews".equals(type)) {
-                List<BookstoreReviewResponse> reviewList = bookstoreReviewService.getReviewsByBookstoreId(bookstoreId);
+                Sort sort = Sort.by(Sort.Direction.DESC, sortField);
+                List<BookstoreReviewResponse> reviewList = bookstoreReviewService.getReviewsByBookstoreId(bookstoreId,sort);
                 return ResponseEntity.ok(SuccessResponse.<BookstoreDetailWithReviews>builder()
                         .result(true)
                         .status(HttpStatus.OK.value())
