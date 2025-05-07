@@ -82,6 +82,7 @@ public class OpenApiService {
                     .address((String) item.get("ADDRESS"))
                     .description((String) item.get("SUB_DESCRIPTION"))
                     .rating(0.0)
+                    .ratingCount(0)
                     .build();
             bookstoreRepository.save(bookstore);
         }

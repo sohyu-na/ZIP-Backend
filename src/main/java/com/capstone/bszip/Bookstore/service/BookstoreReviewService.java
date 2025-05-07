@@ -38,11 +38,12 @@ public class BookstoreReviewService {
         review.setImageUrl(cloudinaryService.uploadfile(thumbnail, cloudinaryFolderName));
 
         bookstoreReviewRepository.save(review);
+        bookstore.updateRating(request.getRating()); //별점 업데이트
 
         return new BookstoreReviewResponse(
                 review.getBookstoreReviewId(),
                 member.getNickname(),
-                review.getRating(),
+                bookstore.getRating(),
                 review.getText(),
                 review.getImageUrl(),
                 review.getCreatedAt()

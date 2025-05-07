@@ -185,6 +185,14 @@ public class BookstoreService {
         }else{
             finalHours = null;
         }
+        //redis - 찜한 서점 수
+        String bookstoreKey = "bookstore:likes:" + bookstoreId;
+        String likedCountStr = redisTemplate.opsForValue().get(bookstoreKey);
+
+        // string -> int 형 변환
+        int likedCount = 0;
+        likedCount = likedCountStr != null ? Integer.parseInt(likedCountStr) : 0;
+
 
         return new BookstoreDetailResponse(
                 bookstore.getBookstoreId(),
@@ -195,7 +203,8 @@ public class BookstoreService {
                 modKeyword,
                 bookstore.getAddress().substring(8),
                 bookstore.getDescription(),
-                isLiked
+                isLiked,
+                likedCount
         );
     }
     private static String extractMatch(Pattern pattern, String text) {
