@@ -211,15 +211,14 @@ public class BookReviewController {
                     bookReviewService.registerBookInBookstores(book, bookstoreIds);
                 }
             }
-
-            bookReviewService.saveBookReview(
-                    BookReview.builder()
-                            .bookReviewText(reviewText)
-                            .book(book)
-                            .member(member)
-                            .bookRating(rating)
-                            .build()
-            );
+            BookReview review = BookReview.builder()
+                    .bookReviewText(reviewText)
+                    .book(book)
+                    .member(member)
+                    .bookRating(rating)
+                    .build();
+            bookReviewService.saveBookReview(review);
+            bookReviewService.updateUserProfileForRecommend(member, book.getBookName(), review);
             return ResponseEntity.ok(
                     SuccessResponse.builder()
                             .result(true)
