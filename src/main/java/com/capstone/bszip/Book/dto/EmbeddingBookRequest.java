@@ -4,11 +4,13 @@ import com.capstone.bszip.Book.domain.Book;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
 @Getter
 @Builder
+@Slf4j
 public class EmbeddingBookRequest {
     @JsonProperty("book_id")
     String bookId;
