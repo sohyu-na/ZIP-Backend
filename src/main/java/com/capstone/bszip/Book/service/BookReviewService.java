@@ -277,6 +277,10 @@ public class BookReviewService {
         return bookRepository.findByIsbn(isbn).orElseThrow(() -> new IllegalArgumentException("책을 찾을 수 없습니다."));
     }
 
+    public Book getBookById(Long bookId){
+        return bookRepository.findByBookId(bookId).orElseThrow(()->new IllegalArgumentException("책을 찾을 수 없습니다."));
+    }
+
 
     public void saveBookReview(BookReview bookReview){
         try{
