@@ -3,6 +3,7 @@ package com.capstone.bszip.Member.service;
 import com.capstone.bszip.Member.domain.Member;
 import com.capstone.bszip.Member.domain.MemberJoinType;
 import com.capstone.bszip.Member.repository.MemberRepository;
+import com.capstone.bszip.Member.service.dto.LoginResponse;
 import com.capstone.bszip.auth.dto.TokenResponse;
 import com.capstone.bszip.auth.security.JwtUtil;
 import com.capstone.bszip.Member.service.dto.LoginRequest;
@@ -82,7 +83,7 @@ public class MemberService {
         temporaryStorage.remove(email);
     }
     @Transactional
-    public TokenResponse loginUser(LoginRequest loginRequest){
+    public LoginResponse loginUser(LoginRequest loginRequest){
         Member member = memberRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 이메일입니다."));
         if(member.getMemberJoinType() != DEFAULT){
@@ -90,10 +91,11 @@ public class MemberService {
         }
         if(passwordEncoder.matches(loginRequest.getPassword(), member.getPassword())) {
             String email = member.getEmail();
+            String nickname = member.getNickname();
             //토큰 생성
             String accessToken = JwtUtil.createAccessToken(email);
             String refreshToken = JwtUtil.createRefreshToken(email);
-            return new TokenResponse(accessToken, refreshToken);
+            return new LoginResponse(nickname,accessToken, refreshToken);
         }
         else {
             throw new RuntimeException("일치하지 않는 비밀번호입니다.");

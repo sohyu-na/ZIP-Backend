@@ -13,10 +13,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -89,10 +86,12 @@ public class BookstoreService {
         if(redisTemplate.opsForSet().isMember(memberKey,bookstoreId.toString())){
             redisTemplate.opsForSet().remove(memberKey,bookstoreId.toString());//찜 취소
             redisTemplate.opsForValue().decrement(bookstoreKey); //찜한 수 -1
+            redisTemplate.opsForZSet().incrementScore("trending:bookstores:weekly", String.valueOf(bookstoreId), -1);
         }
         else{
             redisTemplate.opsForSet().add(memberKey,bookstoreId.toString());//찜
             redisTemplate.opsForValue().increment(bookstoreKey); //찜한 수 +1
+            redisTemplate.opsForZSet().incrementScore("trending:bookstores:weekly", String.valueOf(bookstoreId), 1);
         }
 
     }
@@ -210,6 +209,49 @@ public class BookstoreService {
     private static String extractMatch(Pattern pattern, String text) {
         Matcher matcher = pattern.matcher(text);
         return matcher.find() ? matcher.group(1).trim() : null;
+    }
+
+    public List<String> getTrendingBookstoresNames(){
+        Set<String> topBookstoreIds = redisTemplate.opsForZSet()
+                .reverseRange("trending:bookstores:weekly", 0, 9);
+        List<Long> idList = (topBookstoreIds == null) ? new ArrayList<>()
+                : topBookstoreIds.stream()
+                .map(Long::valueOf)
+                .collect(Collectors.toList());
+        List<String> nameList = new ArrayList<>();
+        System.out.println(idList);
+        if(idList.size() < 10){
+            Set<String> lastWeekIds = redisTemplate.opsForZSet()
+                    .reverseRange("trending:bookstores:lastweek", 0, 9);
+            if (lastWeekIds != null && !lastWeekIds.isEmpty()) {
+                List<Long> lastWeekIdList = lastWeekIds.stream()
+                        .map(Long::valueOf)
+                        .filter(id -> !idList.contains(id))
+                        .collect(Collectors.toList());
+                int need = 10 - idList.size();
+                idList.addAll(lastWeekIdList.stream().limit(need).toList());
+            }
+        }
+        if (idList.size() < 10) {
+            int need = 10 - idList.size();
+            for (long i = 1; idList.size() < 10; i++) {
+                System.out.println("i = " + i + ", contains = " + idList.contains(i));
+                if (!idList.contains(i)) {
+                    idList.add(i);
+                }
+            }
+        }
+        List<Object[]> idNamePairs = bookstoreRepository.findIdAndNameByIds(idList);
+        Map<Long, String> idNameMap = idNamePairs.stream()
+                .collect(Collectors.toMap(
+                        row -> (Long)row[0],
+                        row -> (String)row[1]
+                ));
+
+        List<String> orderedNames = idList.stream()
+                .map(idNameMap::get)
+                .collect(Collectors.toList());
+        return orderedNames;
     }
 
 }

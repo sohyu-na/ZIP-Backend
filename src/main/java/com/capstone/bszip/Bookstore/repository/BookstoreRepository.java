@@ -40,4 +40,7 @@ public interface BookstoreRepository extends JpaRepository<Bookstore,Long> {
     List<Bookstore> findAllByNameContaining(String name);
 
     List<Bookstore> findTop10ByOrderByBookstoreIdDesc();
+
+    @Query("SELECT b.bookstoreId, b.name FROM Bookstore b WHERE b.bookstoreId IN :ids")
+    List<Object[]> findIdAndNameByIds(@Param("ids") List<Long> ids);
 }

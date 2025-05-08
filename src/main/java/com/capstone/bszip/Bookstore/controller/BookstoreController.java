@@ -22,6 +22,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 
 @RestController
@@ -306,5 +308,60 @@ public class BookstoreController {
                             .detail(e.getMessage())
                             .build());
         }
+    }
+
+    @Operation(
+            summary = "급상승 독립서점 목록 조회",
+            description = "관심 급상승(weekly 인기순) 독립서점 이름 리스트를 반환합니다. " +
+                    "데이터 10개를 제공하며 부족할 경우 지난 주 랭킹/전체 서점에서 순차적으로 채워집니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "급상승 서점 목록 조회 성공",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = SuccessResponse.class))),
+            @ApiResponse(responseCode = "404", description = "급상승 서점 정보가 존재하지 않음",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "503", description = "Redis 연결 실패 등 서비스 일시적 장애",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류 발생",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/trending")
+    public ResponseEntity<?> getTrendingBookstores(){
+        try {
+            List<String> trendingBookstores = bookstoreService.getTrendingBookstoresNames();
+            return ResponseEntity.ok(SuccessResponse.<List<String>>builder()
+                    .result(true)
+                    .status(HttpStatus.OK.value())
+                    .message("급상승 서점 목록 조회 성공")
+                    .data(trendingBookstores)
+                    .build());
+
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ErrorResponse.builder()
+                            .result(false)
+                            .status(HttpStatus.NOT_FOUND.value())
+                            .message("급상승 서점 정보가 존재하지 않습니다")
+                            .detail(e.getMessage())
+                            .build());
+
+        } catch (RedisConnectionFailureException e) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(ErrorResponse.builder()
+                            .result(false)
+                            .status(HttpStatus.SERVICE_UNAVAILABLE.value())
+                            .message("서비스 일시적으로 이용할 수 없습니다")
+                            .detail("Redis 연결 실패: " + e.getMessage())
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ErrorResponse.builder()
+                            .result(false)
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .message("서버 오류가 발생했습니다")
+                            .detail(e.getMessage())
+                            .build());
+        }
+
     }
 }

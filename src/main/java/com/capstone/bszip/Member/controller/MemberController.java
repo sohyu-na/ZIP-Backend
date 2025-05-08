@@ -1,5 +1,6 @@
 package com.capstone.bszip.Member.controller;
 
+import com.capstone.bszip.Member.service.dto.LoginResponse;
 import com.capstone.bszip.auth.dto.TokenRequest;
 import com.capstone.bszip.auth.dto.TokenResponse;
 import com.capstone.bszip.auth.AuthService;
@@ -127,13 +128,13 @@ public class MemberController {
 
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response){
         try{
-             TokenResponse tokens = memberService.loginUser(loginRequest);
-             authService.login(loginRequest.getEmail(), tokens.getRefreshToken());
+             LoginResponse loginResponse = memberService.loginUser(loginRequest);
+             authService.login(loginRequest.getEmail(), loginResponse.getRefreshToken());
             return ResponseEntity.ok(SuccessResponse.builder()
                     .result(true)
                     .status(HttpStatus.OK.value())
                     .message("로그인 성공")
-                    .data(tokens)
+                    .data(loginResponse)
                     .build());
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
