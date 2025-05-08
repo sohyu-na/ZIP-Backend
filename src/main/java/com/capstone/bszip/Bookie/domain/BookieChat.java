@@ -20,7 +20,7 @@ public class BookieChat {
     @Column(length = 1024)
     String question;
 
-    @Column(length = 1024)
+    @Column(length = 2000)
     String answer;
 
     @CreatedDate
