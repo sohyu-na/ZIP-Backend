@@ -10,6 +10,7 @@ import com.capstone.bszip.Bookie.repository.BookieChatRepository;
 import com.capstone.bszip.Member.domain.Member;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -24,6 +25,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookieChatService {
 
     private final BookieChatRepository bookieChatRepository;
@@ -45,6 +47,7 @@ public class BookieChatService {
         HttpEntity<APIChatRequest> httpEntity = new HttpEntity<>(APIChatRequest.fromEntity(member, chatRequest), httpHeaders);
         RestTemplate restTemplate = new RestTemplate();
         String chatJson = restTemplate.postForEntity(embeddingURI+"/chat", httpEntity, String.class).getBody();
+        log.info("✅ 응답 : {}", chatJson);
         saveChatToDB(chatJson, member, chatRequest);
         return chatJson;
     }
@@ -57,6 +60,7 @@ public class BookieChatService {
                 .answer(chatJson)
                 .member(member)
                 .build();
+        log.info("{}에 대한 응답 저장", bookieChat.getQuestion());
         bookieChatRepository.save(bookieChat);
     }
 
