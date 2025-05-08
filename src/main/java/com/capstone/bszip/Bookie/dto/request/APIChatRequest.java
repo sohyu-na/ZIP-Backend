@@ -2,11 +2,12 @@ package com.capstone.bszip.Bookie.dto.request;
 
 import com.capstone.bszip.Member.domain.Member;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class APIChatRequest {
     @JsonProperty("user_id")
     String userId;
