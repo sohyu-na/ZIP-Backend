@@ -310,6 +310,21 @@ public class BookstoreController {
         }
     }
 
+    @Operation(
+            summary = "급상승 독립서점 목록 조회",
+            description = "관심 급상승(weekly 인기순) 독립서점 이름 리스트를 반환합니다. " +
+                    "데이터 10개를 제공하며 부족할 경우 지난 주 랭킹/전체 서점에서 순차적으로 채워집니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "급상승 서점 목록 조회 성공",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = SuccessResponse.class))),
+            @ApiResponse(responseCode = "404", description = "급상승 서점 정보가 존재하지 않음",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "503", description = "Redis 연결 실패 등 서비스 일시적 장애",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류 발생",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @GetMapping("/trending")
     public ResponseEntity<?> getTrendingBookstores(){
         try {
