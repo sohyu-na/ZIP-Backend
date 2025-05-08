@@ -1,14 +1,14 @@
 package com.capstone.bszip.Bookie.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.util.List;
 
 @Getter
 @Builder
 @Schema(description = "대화 응답 dto")
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ChatResponse {
     String message;
     List<RecommendedBook> books;
