@@ -9,21 +9,19 @@ import com.capstone.bszip.commonDto.ErrorResponse;
 import com.capstone.bszip.commonDto.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name="책 담기", description = "책 담기 관련 api")
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/pick-book")
 public class PickedBookController {
     private final PickedBookService pickedBookService;
     private final BookReviewService bookReviewService;
 
-    public PickedBookController(PickedBookService pickedBookService, BookReviewService bookReviewService) {
-        this.pickedBookService = pickedBookService;
-        this.bookReviewService = bookReviewService;
-    }
     @Operation(summary = "책 담기 ", description = """
             [로그인 필수] 책 담기 API
             """)
@@ -38,8 +36,8 @@ public class PickedBookController {
                                 .build()
                 );
             }
-            Long isbn = Long.parseLong(pickedBookRequest.getIsbn());
-            Book book = bookReviewService.getBookByIsbn(isbn);
+            Long bookId = Long.parseLong(pickedBookRequest.getBookId());
+            Book book = bookReviewService.getBookById(bookId);
             if (book == null) {
                 return ResponseEntity.status(404).body(
                         ErrorResponse.builder()
@@ -76,7 +74,7 @@ public class PickedBookController {
     public ResponseEntity<?> deletePickedBook(@AuthenticationPrincipal Member member,
                                               @RequestBody PickedBookRequest pickedBookRequest) {
         try{
-            Book book = bookReviewService.getBookByIsbn(Long.parseLong(pickedBookRequest.getIsbn()));
+            Book book = bookReviewService.getBookById(Long.parseLong(pickedBookRequest.getBookId()));
             if (book == null) {
                 return ResponseEntity.status(404).body(
                         ErrorResponse.builder()

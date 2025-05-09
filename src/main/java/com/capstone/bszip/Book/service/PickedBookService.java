@@ -5,16 +5,14 @@ import com.capstone.bszip.Book.domain.PickedBook;
 import com.capstone.bszip.Book.repository.PickedBookRepository;
 import com.capstone.bszip.Member.domain.Member;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class PickedBookService {
 
     private final PickedBookRepository pickedBookRepository;
-
-    public PickedBookService(PickedBookRepository pickedBookRepository) {
-        this.pickedBookRepository = pickedBookRepository;
-    }
 
     public void savePickedBook(Book book, Member member) {
         PickedBook pickedBook = PickedBook.builder()
