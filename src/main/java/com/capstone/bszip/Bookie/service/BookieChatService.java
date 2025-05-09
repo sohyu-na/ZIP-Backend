@@ -50,7 +50,7 @@ public class BookieChatService {
             JsonNode booksNode = node.get("books");
             if (booksNode != null && booksNode.isArray()) {
                 for (JsonNode book : booksNode) {
-                    books.add(RecommendedBook.fromJsonProperty(book.get("bookId").asText(), book.get("bookId").asText(), book.get("bookId").asText()));
+                    books.add(RecommendedBook.fromJsonProperty(book.get("title").asText(), book.get("bookId").asText(), book.get("bookImageUrl").asText()));
                 }
             }
             responses.add(MemberChatHistoryResponse.builder()
