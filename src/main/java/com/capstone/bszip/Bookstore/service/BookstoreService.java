@@ -3,12 +3,14 @@ package com.capstone.bszip.Bookstore.service;
 import com.capstone.bszip.Bookstore.domain.Bookstore;
 import com.capstone.bszip.Bookstore.domain.BookstoreCategory;
 import com.capstone.bszip.Bookstore.repository.BookstoreRepository;
+import com.capstone.bszip.Bookstore.repository.BookstoreSpecs;
 import com.capstone.bszip.Bookstore.service.dto.BookstoreDetailResponse;
 import com.capstone.bszip.Bookstore.service.dto.BookstoreResponse;
 import com.capstone.bszip.Bookstore.service.dto.Hours;
 import com.capstone.bszip.Member.domain.Member;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,14 +29,17 @@ public class BookstoreService {
     private final RedisTemplate<String,String> redisTemplate;
 
     @Transactional
-    public List<BookstoreResponse> searchBookstores(String keyword, Member member,double lat, double lng) {
-        List<Bookstore> bookstores = bookstoreRepository.findByNameOrAddressOrderByDistance(keyword, keyword,lat,lng);
+    public List<BookstoreResponse> searchBookstores(String searchK, List<String> bookstoreK, String region, Member member,double lat, double lng) {
+        Specification<Bookstore> spec = Specification.where(BookstoreSpecs.nameOrAddressContains(searchK))
+                .and(BookstoreSpecs.keywordIn(bookstoreK))
+                .and(BookstoreSpecs.regionContains(region));
 
+        List<Bookstore> bookstores = bookstoreRepository.findWithFiltersOrderByDistance(spec,lat,lng);
         return bookstores.stream()
                 .map(Bookstore -> convertToBookstoreResponse(Bookstore, member))
                 .collect(Collectors.toList());
     }
-
+    /*
     @Transactional
     public List<BookstoreResponse> getBookstoresByCategory(BookstoreCategory category, Member member,double lat, double lng){
         if(category == null){
@@ -47,7 +52,7 @@ public class BookstoreService {
         return bookstores.stream()
                 .map(Bookstore -> convertToBookstoreResponse(Bookstore,member))
                 .collect(Collectors.toList());
-    }
+    }*/
     private BookstoreResponse convertToBookstoreResponse (Bookstore bookstore,Member member){
         String addressExceptCode = bookstore.getAddress();
         if(bookstore.getBookstoreCategory()!=CHILD) {
