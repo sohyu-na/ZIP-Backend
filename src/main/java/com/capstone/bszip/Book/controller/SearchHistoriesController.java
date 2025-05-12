@@ -147,4 +147,9 @@ public class SearchHistoriesController {
         }
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<?> getReviewsBySearch(@RequestParam String bookName, @AuthenticationPrincipal Member member){
+        return ResponseEntity.status(200).body(searchHistoriesSevice.getReviewBySearch(bookName, member));
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.capstone.bszip.Book.repository;
 
+import com.capstone.bszip.Book.domain.Book;
 import com.capstone.bszip.Book.domain.BookReview;
 import com.capstone.bszip.Member.domain.Member;
 import org.springframework.data.domain.Page;
@@ -29,4 +30,6 @@ public interface BookReviewRepository extends JpaRepository<BookReview, Long> {
     @Query("SELECT br.bookReviewId as id, COUNT(bl) as likeCount, br.createdAt FROM BookReview br " +
             "LEFT JOIN br.bookReviewLikesList bl GROUP BY br.bookReviewId")
     List<Object[]> getIdAndBookLikeAndCreatedAtFromAllBookReviews();
+
+    List<BookReview> findByBookIn(List<Book> books);
 }
