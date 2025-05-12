@@ -56,11 +56,13 @@ public class BookstoreController {
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @GetMapping("/search")
-    public ResponseEntity<?> searchBookstores(@RequestParam String keyword,
+    public ResponseEntity<?> searchBookstores(@RequestParam(required = false) String searchK,
+                                              @RequestParam(required = false) List<String> bookstoreK,
+                                              @RequestParam(required = false) String region,
                                               @AuthenticationPrincipal Member member,
                                               @RequestParam double lat, @RequestParam double lng) {
         try {
-            List<BookstoreResponse> bookstores = bookstoreService.searchBookstores(keyword, member, lat, lng);
+            List<BookstoreResponse> bookstores = bookstoreService.searchBookstores(searchK,bookstoreK,region, member, lat, lng);
             /*if (bookstores.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ErrorResponse.builder()
@@ -73,7 +75,7 @@ public class BookstoreController {
             return ResponseEntity.ok(SuccessResponse.<List<BookstoreResponse>>builder()
                     .result(true)
                     .status(HttpStatus.OK.value())
-                    .message(keyword + " - 서점 검색 성공")
+                    .message(searchK + bookstoreK + region + " - 서점 검색 성공")
                     .data(bookstores)
                     .build());
         } catch (IllegalArgumentException e) {
@@ -94,7 +96,7 @@ public class BookstoreController {
                             .build());
         }
     }
-
+    /*
     @Operation(
             summary = "카테고리별 서점 조회",
             description = "지정된 카테고리에 해당하는 서점 목록을 반환합니다. 카테고리가 지정되지 않으면 모든 서점을 반환합니다."
@@ -136,7 +138,7 @@ public class BookstoreController {
                             .detail(e.getMessage())
                             .build());
         }
-    }
+    }*/
 
     @Operation(
             summary = "서점 찜하기/찜 취소",
