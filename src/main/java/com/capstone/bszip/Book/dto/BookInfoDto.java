@@ -1,6 +1,7 @@
 package com.capstone.bszip.Book.dto;
 
 import com.capstone.bszip.Book.domain.Book;
+import com.capstone.bszip.Bookstore.domain.Bookstore;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,9 +26,12 @@ public class BookInfoDto {
                 .bookId(book.getBookId().toString())
                 .title(book.getBookName())
                 .bookImageUrl(book.getBookImageUrl())
-                .bookStores(book.getBookstoreBookList().stream()
-                        .map(BookstoreBookDto::fromEntity)
-                        .toList())
+                .bookStores(book.getBookstoreBookList().stream().map(bookstoreBook ->
+                        {
+                            Bookstore bookstore = bookstoreBook.getBookstore();
+                            return BookStoreDto.from(bookstore);
+                        }
+                ).toList())
                 .authors(book.getAuthors())
                 .bookType(book.getBookType())
                 .build();
