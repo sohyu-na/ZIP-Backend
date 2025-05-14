@@ -2,9 +2,9 @@ package com.capstone.bszip.Member.controller;
 
 import com.capstone.bszip.Member.service.KakaoService;
 import com.capstone.bszip.Member.service.MemberService;
+import com.capstone.bszip.Member.service.dto.LoginResponse;
 import com.capstone.bszip.Member.service.dto.SignupRequest;
 import com.capstone.bszip.auth.AuthService;
-import com.capstone.bszip.auth.dto.TokenResponse;
 import com.capstone.bszip.auth.security.JwtUtil;
 import com.capstone.bszip.commonDto.ErrorResponse;
 import com.capstone.bszip.commonDto.SuccessResponse;
@@ -51,14 +51,14 @@ public class KakaoLoginController {
        // 로그인
        if(loginWay == 3){
            try{
-               TokenResponse tokens = kakaoService.loginUser(kakaoEmail);
-               authService.login(kakaoEmail,tokens.getRefreshToken());
+               LoginResponse loginResponse = kakaoService.loginUser(kakaoEmail);
+               authService.login(kakaoEmail,loginResponse.getRefreshToken());
 
                return ResponseEntity.ok(
                        SuccessResponse.builder()
                                .result(true)
                                .status(200)
-                               .data(tokens)
+                               .data(loginResponse)
                                .build()
                );
            }catch (BadCredentialsException e) {

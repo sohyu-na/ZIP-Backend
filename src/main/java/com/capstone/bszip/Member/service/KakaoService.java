@@ -3,7 +3,7 @@ package com.capstone.bszip.Member.service;
 import com.capstone.bszip.Member.domain.Member;
 import com.capstone.bszip.Member.domain.MemberJoinType;
 import com.capstone.bszip.Member.repository.MemberRepository;
-import com.capstone.bszip.auth.dto.TokenResponse;
+import com.capstone.bszip.Member.service.dto.LoginResponse;
 import com.capstone.bszip.auth.security.JwtUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -136,9 +136,11 @@ public class KakaoService {
 
     }
 
-    public TokenResponse loginUser(String kakaoEmail){
+    public LoginResponse loginUser(String kakaoEmail){
+        Member member = memberRepository.findByEmail(kakaoEmail).orElse(null);
+        String nickname = member.getNickname();
         String accessToken = JwtUtil.createAccessToken(kakaoEmail);
         String refreshToken = JwtUtil.createRefreshToken(kakaoEmail);
-        return new TokenResponse(accessToken, refreshToken);
+        return new LoginResponse(nickname, accessToken, refreshToken);
     }
 }
