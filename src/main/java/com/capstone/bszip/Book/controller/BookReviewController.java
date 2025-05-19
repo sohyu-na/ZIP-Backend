@@ -218,7 +218,7 @@ public class BookReviewController {
                     .bookRating(rating)
                     .build();
             bookReviewService.saveBookReview(review);
-            bookReviewService.updateUserProfileForRecommend(member, book.getBookName(), review);
+            bookReviewService.updateUserProfileAndBookEmbedding(member, book, review);
             return ResponseEntity.ok(
                     SuccessResponse.builder()
                             .result(true)
@@ -305,7 +305,7 @@ public class BookReviewController {
                     .bookRating(bookReviewRequest.getRating())
                     .build();
             bookReviewService.saveBookReview(review);
-            bookReviewService.updateUserProfileForRecommend(member, book.getBookName(), review);
+            bookReviewService.updateUserProfileAndBookEmbedding(member, book, review);
             return ResponseEntity.status(201).body("리뷰 생성 완료");
         }catch (Exception e){
             return ResponseEntity.status(500).body(

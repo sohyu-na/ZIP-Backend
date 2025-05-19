@@ -25,6 +25,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -508,6 +509,15 @@ public class BookReviewService {
         restTemplate.postForEntity(embeddingURI+"/book/embedding", httpEntity, String.class);
     }
 
+    @Async
+    @Transactional
+    public void updateUserProfileAndBookEmbedding(Member member, Book book, BookReview bookReview){
+        Long bookId = book.getBookId();
+        String bookTitle = book.getBookName();
+        updateBookEmbedding(bookId, bookReview);
+        updateUserProfileForRecommend(member, bookTitle, bookReview);
+    }
+
     @Transactional
     public void updateUserProfileForRecommend(Member member, String bookTitle, BookReview bookReview) {
         ProfileUpdateRequest profileUpdateRequest = ProfileUpdateRequest.fromEntity(member, bookTitle, bookReview);
@@ -515,7 +525,20 @@ public class BookReviewService {
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<ProfileUpdateRequest> httpEntity = new HttpEntity<>(profileUpdateRequest, httpHeaders);
         RestTemplate restTemplate = new RestTemplate();
+        log.info("{}님이 작성한 {}에 대한 리뷰 업데이트", member.getNickname(), bookTitle);
         restTemplate.postForEntity(embeddingURI+"/profile/update", httpEntity, String.class);
 
+    }
+
+    @Transactional
+    public void updateBookEmbedding(Long bookId, BookReview bookReview) {
+        String bookIdString = bookId.toString();
+        String bookReviewText = bookReview.getBookReviewText();
+        UpdateBookEmbeddingRequest uber = UpdateBookEmbeddingRequest.fromEntity(bookIdString, bookReviewText);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<UpdateBookEmbeddingRequest> httpEntity = new HttpEntity<>(uber, httpHeaders);
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.postForEntity(embeddingURI+"/book/update", httpEntity, String.class);
     }
 }
