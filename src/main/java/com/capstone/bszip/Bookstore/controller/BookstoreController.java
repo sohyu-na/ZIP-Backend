@@ -6,6 +6,7 @@ import com.capstone.bszip.Bookstore.domain.Bookstore;
 import com.capstone.bszip.Bookstore.domain.BookstoreCategory;
 import com.capstone.bszip.Bookstore.service.BookstoreReviewService;
 import com.capstone.bszip.Bookstore.service.BookstoreService;
+import com.capstone.bszip.Bookstore.service.HashtagService;
 import com.capstone.bszip.Bookstore.service.dto.*;
 import com.capstone.bszip.Member.domain.Member;
 import com.capstone.bszip.commonDto.ErrorResponse;
@@ -42,6 +43,7 @@ public class BookstoreController {
 
     private final BookstoreService bookstoreService;
     private final BookstoreReviewService bookstoreReviewService;
+    private final HashtagService hashtagService;
     private final IndepBookService indepBookService;
 
     @Operation(summary = "서점 검색", description = "검색창에서 서점을 이름,주소로 검색합니다.")
@@ -366,4 +368,48 @@ public class BookstoreController {
         }
 
     }
+    @Operation(
+            summary = "서점 해시태그 목록 조회",
+            description = "서점 해시태그 중 랜덤으로 10개를 반환합니다. 각 해시태그는 태그명과 연결된 서점 ID를 포함합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "추천 해시태그 목록 조회 성공",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = SuccessResponse.class))),
+            @ApiResponse(responseCode = "404", description = "추천 해시태그 정보가 존재하지 않음",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류 발생",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/hashtag")
+    public ResponseEntity<?> getRandomHashtags(@RequestParam(defaultValue = "10") int count) {
+        try {
+            List<HashtagResponse> hashtags = hashtagService.getRandomHashtagsWithBookstoreId(count);
+            if (hashtags == null || hashtags.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ErrorResponse.builder()
+                                .result(false)
+                                .status(HttpStatus.NOT_FOUND.value())
+                                .message("추천 해시태그 정보가 존재하지 않습니다")
+                                .detail("DB에 추천 해시태그가 없습니다.")
+                                .build());
+            }
+            return ResponseEntity.ok(
+                    SuccessResponse.<List<HashtagResponse>>builder()
+                            .result(true)
+                            .status(HttpStatus.OK.value())
+                            .message("추천 해시태그 목록 조회 성공")
+                            .data(hashtags)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ErrorResponse.builder()
+                            .result(false)
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .message("서버 오류가 발생했습니다")
+                            .detail(e.getMessage())
+                            .build());
+        }
+    }
+
 }

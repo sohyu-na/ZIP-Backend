@@ -65,4 +65,13 @@ public class Bookstore {
 
     @OneToMany(mappedBy = "bookstore", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookstoreReview> bookstoreReviews;
+
+    @OneToOne(mappedBy = "bookstore", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Hashtag hashtag;
+
+    @Builder
+    public Bookstore(Long bookstoreId, Hashtag hashtag) {
+        this.bookstoreId = bookstoreId;
+        this.hashtag = hashtag;
+    }
 }
