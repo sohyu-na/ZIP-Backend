@@ -9,4 +9,7 @@ public interface BookstoreRepositoryCustom {
     List<Bookstore> findWithFiltersOrderByDistance(Specification<Bookstore> spec,
                                                    double userLat,
                                                    double userLng);
+    List<Bookstore> findWithFiltersOrderByRating(Specification<Bookstore> spec);
+
+    List<Bookstore> findWithFiltersOrderByLikes(Specification<Bookstore> spec);
 }

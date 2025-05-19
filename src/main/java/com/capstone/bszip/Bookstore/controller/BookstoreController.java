@@ -46,25 +46,43 @@ public class BookstoreController {
     private final HashtagService hashtagService;
     private final IndepBookService indepBookService;
 
-    @Operation(summary = "서점 검색", description = "검색창에서 서점을 이름,주소로 검색합니다.")
+    @Operation(
+            summary = "서점 검색",
+            description = "키워드, 서점 ID 목록, 지역, 정렬 방식, 위치 정보(위도/경도)를 기반으로 서점을 검색합니다."
+    )
+    @Parameters({
+            @Parameter(name = "searchK", description = "검색 키워드(서점명,주소)",
+                    required = false, schema = @Schema(type = "string")),
+            @Parameter(name = "bookstoreK", description = "필터 - 조건(서적종류,북스테이,북카페..)",
+                    required = false, schema = @Schema(type = "array", implementation = String.class)),
+            @Parameter(name = "region", description = "필터 - 지역명",
+                    required = false, schema = @Schema(type = "string")),
+            @Parameter(name = "sortField", description = "정렬 기준 (distance: 거리순, rating: 평점순 ,likes : 찜한순)",
+                    required = false, schema = @Schema(type = "string", allowableValues = {"distance", "rating","likes"})),
+            @Parameter(name = "lat", description = "검색 기준 위도",
+                    required = true, schema = @Schema(type = "number", format = "double")),
+            @Parameter(name = "lng", description = "검색 기준 경도",
+                    required = true, schema = @Schema(type = "number", format = "double"))
+    })
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "검색 성공",
-                    content = @Content(schema = @Schema(implementation = Bookstore.class))),
-            @ApiResponse(responseCode = "404", description = "검색 결과 없음",
+            @ApiResponse(responseCode = "200", description = "서점 검색 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터",
                     content = @Content(schema = @Schema(implementation = String.class))),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청",
+            @ApiResponse(
+                    responseCode = "404", description = "검색 결과 없음",
                     content = @Content(schema = @Schema(implementation = String.class))),
-            @ApiResponse(responseCode = "500", description = "서버 오류",
+            @ApiResponse(responseCode = "500", description = "서버 오류 발생",
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @GetMapping("/search")
     public ResponseEntity<?> searchBookstores(@RequestParam(required = false) String searchK,
                                               @RequestParam(required = false) List<String> bookstoreK,
                                               @RequestParam(required = false) String region,
+                                              @RequestParam(required = false, defaultValue = "distance") String sortField,
                                               @AuthenticationPrincipal Member member,
                                               @RequestParam double lat, @RequestParam double lng) {
         try {
-            List<BookstoreResponse> bookstores = bookstoreService.searchBookstores(searchK,bookstoreK,region, member, lat, lng);
+            List<BookstoreResponse> bookstores = bookstoreService.searchBookstores(searchK,bookstoreK,region,sortField, member, lat, lng);
             /*if (bookstores.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ErrorResponse.builder()
