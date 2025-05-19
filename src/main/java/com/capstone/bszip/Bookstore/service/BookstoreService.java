@@ -29,12 +29,24 @@ public class BookstoreService {
     private final RedisTemplate<String,String> redisTemplate;
 
     @Transactional
-    public List<BookstoreResponse> searchBookstores(String searchK, List<String> bookstoreK, String region, Member member,double lat, double lng) {
+    public List<BookstoreResponse> searchBookstores(String searchK, List<String> bookstoreK, String region, String sortField, Member member,double lat, double lng) {
         Specification<Bookstore> spec = Specification.where(BookstoreSpecs.nameOrAddressContains(searchK))
                 .and(BookstoreSpecs.keywordIn(bookstoreK))
                 .and(BookstoreSpecs.regionContains(region));
 
-        List<Bookstore> bookstores = bookstoreRepository.findWithFiltersOrderByDistance(spec,lat,lng);
+        List<Bookstore> bookstores;
+        switch(sortField){
+            case "rating":
+                bookstores = bookstoreRepository.findWithFiltersOrderByRating(spec);
+                break;
+            case "likes":
+                bookstores = bookstoreRepository.findWithFiltersOrderByLikes(spec);
+                break;
+            case "distance":
+            default:
+                bookstores = bookstoreRepository.findWithFiltersOrderByDistance(spec,lat,lng);
+                break;
+        }
         return bookstores.stream()
                 .map(Bookstore -> convertToBookstoreResponse(Bookstore, member))
                 .collect(Collectors.toList());
