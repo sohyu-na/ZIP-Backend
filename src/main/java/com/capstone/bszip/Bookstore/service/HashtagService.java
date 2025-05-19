@@ -42,7 +42,7 @@ public class HashtagService {
             }
         }
     }
-    @PostConstruct
+    //@PostConstruct
     public void executeHashtagMigration() {
         migrateAllBookstoresToHashtags();
         System.out.println("모든 서점의 해시태그 추출 및 저장이 완료되었습니다.");
