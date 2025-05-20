@@ -50,11 +50,8 @@ public class HashtagService {
 
     @Transactional(readOnly = true)
     public List<HashtagResponse> getRandomHashtagsWithBookstoreId(int count) {
-        return hashtagRepository.findRandomHashtags(count)
-                .stream()
-                .map(hashtag -> new HashtagResponse(
-                        hashtag.getTag(),
-                        hashtag.getBookstore().getBookstoreId()))
+        return hashtagRepository.findRandomHashtags(count).stream()
+                .map(HashtagResponse::from)
                 .collect(Collectors.toList());
     }
 }

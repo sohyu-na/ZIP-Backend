@@ -50,21 +50,13 @@ public class BookstoreReviewService {
                 review.getCreatedAt()
         );
     }
+    // 서점별 리뷰 조회
+    @Transactional(readOnly = true)
     public List<BookstoreReviewResponse> getReviewsByBookstoreId(Long bookstoreId, Sort sort){
         List<BookstoreReview> reviews = bookstoreReviewRepository.findReviewsByBookstoreId(bookstoreId,sort);
         return reviews.stream()
-                .map(this::convertToBookstoreResponse)
+                .map(BookstoreReviewResponse::from)
                 .collect(Collectors.toList());
     }
-    private BookstoreReviewResponse convertToBookstoreResponse(BookstoreReview review) {
 
-        return new BookstoreReviewResponse(
-                review.getBookstoreReviewId(),
-                review.getMember().getNickname(),
-                review.getRating(),
-                review.getText(),
-                review.getImageUrl(),
-                review.getCreatedAt()
-        );
-    }
 }
