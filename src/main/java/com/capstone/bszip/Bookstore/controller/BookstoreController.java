@@ -53,8 +53,6 @@ public class BookstoreController {
     @Parameters({
             @Parameter(name = "searchK", description = "검색 키워드(서점명,주소)",
                     required = false, schema = @Schema(type = "string")),
-            @Parameter(name = "bookstoreK", description = "필터 - 조건(서적종류,북스테이,북카페..)",
-                    required = false, schema = @Schema(type = "array", implementation = String.class)),
             @Parameter(name = "region", description = "필터 - 지역명",
                     required = false, schema = @Schema(type = "string")),
             @Parameter(name = "sortField", description = "정렬 기준 (distance: 거리순, rating: 평점순 ,likes : 찜한순)",
