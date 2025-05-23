@@ -10,12 +10,12 @@ import lombok.Getter;
 @Builder
 public class HashtagResponse {
     private String tag;
-    private Long bookstoreId;
+    private String name;
 
     public static HashtagResponse from(Hashtag hashtag) {
         return HashtagResponse.builder()
                 .tag(hashtag.getTag())
-                .bookstoreId(hashtag.getBookstore().getBookstoreId())
+                .bookstoreId(hashtag.getBookstore().getName())
                 .build();
     }
 }
