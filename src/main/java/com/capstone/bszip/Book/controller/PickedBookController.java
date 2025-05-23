@@ -1,6 +1,7 @@
 package com.capstone.bszip.Book.controller;
 
 import com.capstone.bszip.Book.domain.Book;
+import com.capstone.bszip.Book.dto.MyPickBooksResponse;
 import com.capstone.bszip.Book.dto.PickedBookRequest;
 import com.capstone.bszip.Book.service.BookReviewService;
 import com.capstone.bszip.Book.service.PickedBookService;
@@ -90,5 +91,14 @@ public class PickedBookController {
         }catch (Exception e){
             throw new RuntimeException(e);
         }
+    }
+
+    @GetMapping
+    @Operation(summary = "책 담기 조회 ", description = """
+            [로그인 필수] 책 담기 조회 API
+            """)
+    public ResponseEntity<MyPickBooksResponse> getMyPickedBooks(@AuthenticationPrincipal Member member) {
+        MyPickBooksResponse pickBooks = pickedBookService.getMyPickedBooks(member);
+        return ResponseEntity.ok(pickBooks);
     }
 }
