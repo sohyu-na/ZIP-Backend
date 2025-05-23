@@ -2,8 +2,6 @@ package com.capstone.bszip.Bookstore.controller;
 
 import com.capstone.bszip.Book.dto.BookSearchResponse;
 import com.capstone.bszip.Book.service.IndepBookService;
-import com.capstone.bszip.Bookstore.domain.Bookstore;
-import com.capstone.bszip.Bookstore.domain.BookstoreCategory;
 import com.capstone.bszip.Bookstore.service.BookstoreReviewService;
 import com.capstone.bszip.Bookstore.service.BookstoreService;
 import com.capstone.bszip.Bookstore.service.HashtagService;
@@ -20,7 +18,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.RedisConnectionFailureException;
@@ -29,9 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 
@@ -81,15 +76,6 @@ public class BookstoreController {
                                               @RequestParam double lat, @RequestParam double lng) {
         try {
             List<BookstoreResponse> bookstores = bookstoreService.searchBookstores(searchK,bookstoreK,region,sortField, member, lat, lng);
-            /*if (bookstores.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ErrorResponse.builder()
-                                .result(false)
-                                .status(HttpStatus.NOT_FOUND.value())
-                                .message("검색 결과가 없습니다.")
-                                .detail(keyword+" 에 해당하는 서점이 없습니다.")
-                                .build());
-            }*/
             return ResponseEntity.ok(SuccessResponse.<List<BookstoreResponse>>builder()
                     .result(true)
                     .status(HttpStatus.OK.value())
@@ -114,50 +100,6 @@ public class BookstoreController {
                             .build());
         }
     }
-    /*
-    @Operation(
-            summary = "카테고리별 서점 조회",
-            description = "지정된 카테고리에 해당하는 서점 목록을 반환합니다. 카테고리가 지정되지 않으면 모든 서점을 반환합니다."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "성공적으로 서점 목록을 반환"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청",
-                    content = @Content(schema = @Schema(implementation = String.class))),
-            @ApiResponse(responseCode = "500", description = "서버 오류 발생",
-                    content = @Content(schema = @Schema(implementation = String.class)))
-    })
-    @GetMapping
-    public ResponseEntity<?> getBookstoresByCategory(
-            @Parameter(description = "조회할 서점 카테고리") @RequestParam(required = false) BookstoreCategory category,
-            @AuthenticationPrincipal Member member,
-            @RequestParam double lat, @RequestParam double lng) {
-        try {
-            List<BookstoreResponse> bookstores = bookstoreService.getBookstoresByCategory(category, member, lat, lng);
-            return ResponseEntity.ok(SuccessResponse.<List<BookstoreResponse>>builder()
-                    .result(true)
-                    .status(HttpStatus.OK.value())
-                    .message("카테고리별 서점 조회 성공")
-                    .data(bookstores)
-                    .build());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ErrorResponse.builder()
-                            .result(false)
-                            .status(HttpStatus.BAD_REQUEST.value())
-                            .message("잘못된 요청입니다.")
-                            .detail(e.getMessage())
-                            .build());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ErrorResponse.builder()
-                            .result(false)
-                            .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .message("서버 오류가 발생했습니다.")
-                            .detail(e.getMessage())
-                            .build());
-        }
-    }*/
-
     @Operation(
             summary = "서점 찜하기/찜 취소",
             description = "[로그인 필수] 특정 서점에 대해 찜하기 또는 찜 취소를 수행합니다."
@@ -170,7 +112,8 @@ public class BookstoreController {
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @PostMapping("/{bookstoreId}/toggle-like")
-    public ResponseEntity<?> toggleLikeBookstore(@PathVariable Long bookstoreId, @AuthenticationPrincipal Member member) {
+    public ResponseEntity<?> toggleLikeBookstore(@PathVariable Long bookstoreId,
+                                                 @AuthenticationPrincipal Member member) {
         try {
             if (member == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -181,12 +124,11 @@ public class BookstoreController {
                                 .detail("로그인이 필요한 서비스입니다.")
                                 .build());
             }
-            Long memberId = member.getMemberId();
-            bookstoreService.toggleLikeBookstore(memberId, bookstoreId);
+            bookstoreService.toggleLikeBookstore(member.getMemberId(), bookstoreId);
             return ResponseEntity.ok(SuccessResponse.<Void>builder()
                     .result(true)
                     .status(HttpStatus.OK.value())
-                    .message("서점 찜하기/찜 취소 성공 - 사용자: " + memberId + " 서점: " + bookstoreId)
+                    .message("서점 찜하기/찜 취소 성공 - 사용자: " + member.getMemberId() + " 서점: " + bookstoreId)
                     .build());
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -219,11 +161,8 @@ public class BookstoreController {
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @GetMapping("/liked")
-    public ResponseEntity<?> getLikedBookstores(
-            @RequestParam(required = false) BookstoreCategory category,
-            @Parameter(hidden = true) @AuthenticationPrincipal Member member,
-            @RequestParam double lat, @RequestParam double lng
-    ) {
+    public ResponseEntity<?> getLikedBookstores(@Parameter(hidden = true) @AuthenticationPrincipal Member member,
+                                                @RequestParam double lat, @RequestParam double lng) {
         if (member == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ErrorResponse.builder()
@@ -234,18 +173,12 @@ public class BookstoreController {
                             .build());
         }
         try {
-            List<BookstoreResponse> likedBookstores;
-            likedBookstores = bookstoreService.getLikedBookstoresByCategory(member, category, lat, lng);
-
-            Map<String, Object> responseData = new HashMap<>();
-            responseData.put("totalCnt", likedBookstores.size());
-            responseData.put("bookstores", likedBookstores);
-
-            return ResponseEntity.ok(SuccessResponse.<Map<String, Object>>builder()
+            List<BookstoreResponse> likedBookstores = bookstoreService.getLikedBookstoresByCategory(member, lat, lng);
+            return ResponseEntity.ok(SuccessResponse.<List<BookstoreResponse>>builder()
                     .result(true)
                     .status(HttpStatus.OK.value())
                     .message("찜한 서점 목록 조회 성공")
-                    .data(responseData)
+                    .data(likedBookstores)
                     .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -266,7 +199,7 @@ public class BookstoreController {
             @Parameter(name = "bookstoreId", description = "조회할 서점의 ID", required = true),
             @Parameter(name = "type", description = "조회할 데이터 타입 (reviews: 리뷰 목록, books: 보유 서적 목록)",
                     required = true, schema = @Schema(type = "string", allowableValues = {"reviews", "books"})),
-            @Parameter(name = "sortField", description = "정렬 타입 (createdAt: 최신순, rating: 별점순)",
+            @Parameter(name = "sortField", description = "[type-reviews] 정렬 타입 (createdAt: 최신순, rating: 별점순)",
                     required = false, schema = @Schema(type = "string", allowableValues = {"createdAt", "rating"}))
     })
     @ApiResponses(value = {
@@ -290,7 +223,6 @@ public class BookstoreController {
                                                  @AuthenticationPrincipal Member member) {
         try {
             BookstoreDetailResponse bookstoreDetail = bookstoreService.getBookstoreDetail(member, bookstoreId);
-
             if("reviews".equals(type)) {
                 Sort sort = Sort.by(Sort.Direction.DESC, sortField);
                 List<BookstoreReviewResponse> reviewList = bookstoreReviewService.getReviewsByBookstoreId(bookstoreId,sort);

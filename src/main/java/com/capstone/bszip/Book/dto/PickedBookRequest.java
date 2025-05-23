@@ -9,5 +9,5 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class PickedBookRequest {
-    String isbn;
+    String bookId;
 }

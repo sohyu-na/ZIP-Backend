@@ -24,10 +24,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,6 +54,9 @@ public class BookReviewService {
     private String kakaoApiKey;
     private static final String BOOK_REVIEW_LIKES_KEY = "book_review_likes:";
     private static final String LAST7DAYS_BOOK_REVIEW_LIKES_KEY = "last7days_book_review_likes:";
+    @Value("${ai.uri}")
+    private  String embeddingURI;
+
 
     public BookReviewService(BookRepository bookRepository,
                              ObjectMapper objectMapper,
@@ -227,6 +228,7 @@ public class BookReviewService {
         }
     }
     // 검색된 결과로 book 객체 만들고 저장
+    @Transactional
     public void saveBookByKakaoSearch(String bookJson){
         try{
             ObjectMapper objectMapper = new ObjectMapper();
@@ -255,6 +257,7 @@ public class BookReviewService {
                     .bookType(BookType.normal)
                     .build();
             bookRepository.save(book);
+            storeEmbeddingBook(book);
 
         }catch (Exception e){
             throw new RuntimeException("북 객체 만들기 실패: "+e);
@@ -273,6 +276,10 @@ public class BookReviewService {
 
     public Book getBookByIsbn(Long isbn){
         return bookRepository.findByIsbn(isbn).orElseThrow(() -> new IllegalArgumentException("책을 찾을 수 없습니다."));
+    }
+
+    public Book getBookById(Long bookId){
+        return bookRepository.findByBookId(bookId).orElseThrow(()->new IllegalArgumentException("책을 찾을 수 없습니다."));
     }
 
 
@@ -488,8 +495,50 @@ public class BookReviewService {
                 .build();
 
         bookRepository.save(book);
-            // 서점 저장
+        storeEmbeddingBook(book);
+        // 서점 저장
         return book;
-        }
+    }
+    @Transactional
+    public void storeEmbeddingBook(Book book) {
+        EmbeddingBookRequest embeddingBookRequest = EmbeddingBookRequest.fromEntity(book);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<EmbeddingBookRequest> httpEntity = new HttpEntity<>(embeddingBookRequest, httpHeaders);
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.postForEntity(embeddingURI+"/book/embedding", httpEntity, String.class);
+    }
 
+    @Async
+    @Transactional
+    public void updateUserProfileAndBookEmbedding(Member member, Book book, BookReview bookReview){
+        Long bookId = book.getBookId();
+        String bookTitle = book.getBookName();
+        updateBookEmbedding(bookId, bookReview);
+        updateUserProfileForRecommend(member, bookTitle, bookReview);
+    }
+
+    @Transactional
+    public void updateUserProfileForRecommend(Member member, String bookTitle, BookReview bookReview) {
+        ProfileUpdateRequest profileUpdateRequest = ProfileUpdateRequest.fromEntity(member, bookTitle, bookReview);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<ProfileUpdateRequest> httpEntity = new HttpEntity<>(profileUpdateRequest, httpHeaders);
+        RestTemplate restTemplate = new RestTemplate();
+        log.info("{}님이 작성한 {}에 대한 리뷰 업데이트", member.getNickname(), bookTitle);
+        restTemplate.postForEntity(embeddingURI+"/profile/update", httpEntity, String.class);
+
+    }
+
+    @Transactional
+    public void updateBookEmbedding(Long bookId, BookReview bookReview) {
+        String bookIdString = bookId.toString();
+        String bookReviewText = bookReview.getBookReviewText();
+        UpdateBookEmbeddingRequest uber = UpdateBookEmbeddingRequest.fromEntity(bookIdString, bookReviewText);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<UpdateBookEmbeddingRequest> httpEntity = new HttpEntity<>(uber, httpHeaders);
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.postForEntity(embeddingURI+"/book/update", httpEntity, String.class);
+    }
 }

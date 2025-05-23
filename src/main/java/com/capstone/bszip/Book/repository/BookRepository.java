@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,5 +20,5 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     Page<Book> findByBookNameContainingAndBookType(String bookName, BookType bookType, Pageable pageable);
     @Query("SELECT b FROM Book b JOIN b.authors a WHERE a LIKE %:author% AND b.bookType = :bookType")
     Page<Book> findByAuthorsContainingAndBookType(@Param("author") String author, @Param("bookType") BookType bookType, Pageable pageable);
-
+    List<Book> findAllByBookNameContaining(String bookName);
 }
