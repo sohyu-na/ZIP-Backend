@@ -54,7 +54,7 @@ public class HashtagService {
                 .stream()
                 .map(hashtag -> new HashtagResponse(
                         hashtag.getTag(),
-                        hashtag.getBookstore().getBookstoreId()))
+                        hashtag.getBookstore().getName()))
                 .collect(Collectors.toList());
     }
 }
