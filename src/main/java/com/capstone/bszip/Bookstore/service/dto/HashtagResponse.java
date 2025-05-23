@@ -15,7 +15,7 @@ public class HashtagResponse {
     public static HashtagResponse from(Hashtag hashtag) {
         return HashtagResponse.builder()
                 .tag(hashtag.getTag())
-                .bookstoreId(hashtag.getBookstore().getName())
+                .name(hashtag.getBookstore().getName())
                 .build();
     }
 }
