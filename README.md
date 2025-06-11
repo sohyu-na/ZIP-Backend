@@ -32,6 +32,7 @@
 
 ## 🛠️ 사용 기술
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-6DB33F?style=flat-square&logo=springboot&logoColor=white) 
+![Gradle](https://img.shields.io/badge/Gradle-02303A?style=flat-square&logo=Gradle&logoColor=white)
 ![JPA](https://img.shields.io/badge/JPA-000000?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB4bWxu...%29)
 ![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white) 
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white)
@@ -45,15 +46,28 @@
 ## 💡 시작하기
 
 ### 사전준비
+- [Git](https://git-scm.com/downloads)
+- Java Development Kit(JDK)
+  - version : [Java 17](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
 - 데이터베이스 준비
-  - MySQL
-  - Redis
+  - [MySQL](https://dev.mysql.com/downloads/mysql/)
+    - version : 8.0
+  - [Redis](https://redis.io/downloads/)
+    - version : 8.0
+- InteliJ IDEA
+  - local에서 프로젝트 실행을 위해 필요합니다.
 
 - 부가 기능 api키 준비
   - spring.mail
+    - 메일 발신자 아이디 (example@example.com이면 example)
+    - 메일 앱 비밀번호   
   - kakao
+    - 로그인을 위한 rest api key   
   - cloudinary
+    - api key
+    - clode name
   - ai
+    - gpt api key
     
 ### How to Build
 1. Repository 클론
@@ -62,12 +76,31 @@ git clone https://github.com/TEAM-ZIP/Backend.git
 ```
 
 2. .env
+- 전달받은 `.env`파일을 사용하거나 직접 .env 파일의 환경변수를 설정합니다.
+- .env 파일의 위치는 src/main/resources입니다.
 ```
-
+ai.base.uri = {ai 서버 주소}
+BOOKSTORE_CAFE_KEY = { 공공데이터포털 카페가 있는 서점 api key }
+BOOKSTORE_CHILD_KEY = { 공공데이터포털 아동 서점 api key }
+BOOKSTORE_INDEP_KEY = {공공데이터포털 독립 서점 api key}
+cloudinary.api_key = {cloudniary api key}
+cloudinary.api_secret = {cloudniary secret key}
+DB_PASSWORD = {MySQL DB 비밀번호}
+DB_URL = {MySQL url}
+DB_USERNAME = {MySQL DB name}
+jwt.secret = {60자 이상의 jwt 생성용 문자열}
+kakao.client.id = {kakao rest api key}
+kakao.redirect-uri = {kakao 로그인 용 redirect uri}
+mail.password = {메일 앱 비밀번호}
+mail.username = {메일 호트 이름}
+openai.api.key = {gpt api key}
+spring.redis.host = {redis 주소}
+spring.redis.port = {redis 포트 번호}
 ```
 
 3.  빌드
 ```
+cd Capstone-Backend
 ./gradlew build
 ```
 
@@ -75,11 +108,22 @@ git clone https://github.com/TEAM-ZIP/Backend.git
 ### How to Install
 - 서버 실행
 ```
-./gradlew 
+cd build/libs
+nohup java -jar bszip-0.0.1-SNAPSHOT.jar &
 ```
 
 ### How to Test
 - 서버 실행 후, `http://localhost:8080/ `에 접속
+- api test를 원하면, `http://localhost:8080/swagger-ui/index.html#/`에 접속하여 swagger를 통해 api 호출 테스트할 수 있음
+![image](https://github.com/user-attachments/assets/f4e6db4a-72a2-4081-9967-bfa285aca9ef)
+![image](https://github.com/user-attachments/assets/9c5b18dd-0494-4cca-91ea-77ea9606a048)
+
+- 프론트와 연동되어 테스트 진행 시, 프론트엔드 빌드/실행한 로컬 주소 혹은 [배포된 주소](https://bookstore-zip.site/)에서 실제 이용하고 있는 api 호출 결과 확인 가능
+  - 배포된 주소에서 다음과 같은 이메일과 비밀번호로 로그인 시 기존 데이터로 테스트할 수 있습니다.
+  - email : user@example.com
+  - password : password123
+
+
 
 ---
 ## 👋🏻 Members
@@ -129,7 +173,13 @@ git clone https://github.com/TEAM-ZIP/Backend.git
 ├─ 📂 config           ▶️ 전역 설정
 └─ BszipApplication    ▶️ 메인 애플리케이션 실행 클래스
 ```
-<br>
+
+ - `controller`: HTTP 요청을 받아 처리하는 진입점
+ - `service`: 비즈니스 로직 구현
+ - `repository`: 데이터베이스에 접근하는 계층
+ - `domain`: 데이터베이스 매핑을 위한 도메인 모델
+ - `dto`: 요청/응답에 사용되는 데이터 전송 객체
+
 
 ## 📚 오픈소스
 
