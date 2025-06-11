@@ -2,7 +2,7 @@
 
 ![Slide 16_9 - 1](https://github.com/user-attachments/assets/81ae111b-6daf-4781-84c7-1886aabc334e)
 
-
+[📍 https://bookstore-zip.site/에서 서점집을 만나보세요!](https://bookstore-zip.site/)
 ##  프로젝트 개요
 
 이 프로젝트는 개인만의 특성을 드러내는 독립출판물의 감성을 즐기는 사용자가 독립출판물을 더 잘 찾아낼 수 있도록, 독립출판물을 비치한 서점에 대한 위치, 키워드, 운영시간 등의 정보와 도서출판전산망에 등록되지 않은 독립출판물 리뷰 제공 및 추천 시스템을 제공합니다.
