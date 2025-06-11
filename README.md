@@ -1,14 +1,15 @@
 # 서점ZIP
 
-![alt text](<public/readme/Slide 16_9 - 1.png>)
+![Slide 16_9 - 1](https://github.com/user-attachments/assets/81ae111b-6daf-4781-84c7-1886aabc334e)
+
 
 ##  프로젝트 개요
 
 이 프로젝트는 개인만의 특성을 드러내는 독립출판물의 감성을 즐기는 사용자가 독립출판물을 더 잘 찾아낼 수 있도록, 독립출판물을 비치한 서점에 대한 위치, 키워드, 운영시간 등의 정보와 도서출판전산망에 등록되지 않은 독립출판물 리뷰 제공 및 추천 시스템을 제공합니다.
 
 ### 주요 기능
+![Slide 16_9 - 31](https://github.com/user-attachments/assets/a3baf993-d50c-4f18-84ff-75b9e08f7cd5)
 
-![alt text](</public/readme/Slide 16_9 - 31.png>)
 
 1. **BOOKSNAP** (사용자 리뷰 기반 독립출판물 데이터 구축)
 
@@ -27,7 +28,7 @@
 
 ### 부가 기능
 
-![부가 기능](<public/readme/Slide 16_9 - 51.png>)
+![Slide 16_9 - 51](https://github.com/user-attachments/assets/d2d274fd-b67d-41ce-be16-f1f9a7f4043f)
 
 ## 🛠️ 사용 기술
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-6DB33F?style=flat-square&logo=springboot&logoColor=white) 
@@ -44,7 +45,7 @@
 ## 💡 시작하기
 
 ### 사전준비
-  - 데이터베이스 준비
+- 데이터베이스 준비
   - MySQL
   - Redis
 
@@ -88,8 +89,8 @@ git clone https://github.com/TEAM-ZIP/Backend.git
 |         [홍지형](https://github.com/topograp2)          |         [소현아](https://github.com/sohyu-na)          |
 
 ## 📍 아키텍처
+![architecture](https://github.com/user-attachments/assets/8229de7c-c9d1-4c91-86bf-6b757596b158)
 
-![alt text](public/readme/architecture.png)
 
 ## 🗂️ 폴더 구조
 ```
@@ -127,16 +128,15 @@ git clone https://github.com/TEAM-ZIP/Backend.git
 │   └─ SuccessResponse
 ├─ 📂 config           ▶️ 전역 설정
 └─ BszipApplication    ▶️ 메인 애플리케이션 실행 클래스
-
+```
 <br>
 
 ## 📚 오픈소스
 
 ## Backend Libraries & Tools
 
-1. **Spring Boot** : https://spring.io/
-2. **Lombok** : https://projectlombok.org/
-3. **MySQL** : https://www.mysql.com/
-4. **Redis** : https://redis.io/
-5. **Swagger** : https://swagger.io/
-6. **GitHub** : https://github.com/
+1. **Spring Boot** : [Spring Boot Official Site](https://spring.io/)
+2. **Lombok** :  [Lombok Official Site](https://projectlombok.org/)
+3. **MySQL** : [MySQL Official Site](https://www.mysql.com/)
+4. **Redis** : [Redis Official Site](https://redis.io/)
+5. **Swagger** : [Swagger Official Site](https://swagger.io/)
